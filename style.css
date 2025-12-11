@@ -41,16 +41,16 @@ header {
 }
 
 .logo-area {
-    display:flex;
-    align-items:center;
-    gap:12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .logo-inline svg {
-    width:56px;
-    height:56px;
-    border-radius:8px;
-    background:transparent;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: transparent;
 }
 
 .brand-text h1 {
@@ -64,18 +64,6 @@ header {
     opacity: 0.9;
     font-weight: 300;
     letter-spacing: 0.5px;
-}
-
-.adsense-header {
-    min-width: 320px;
-    min-height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-actions {
@@ -326,9 +314,8 @@ header {
 .tecnologia { background: linear-gradient(45deg, #00b4d8, #0077b6); }
 .economia { background: linear-gradient(45deg, #2ecc71, #27ae60); }
 .esportes { background: linear-gradient(45deg, #e74c3c, #c0392b); }
-.politica { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
-.saude { background: linear-gradient(45deg, #3498db, #2980b9); }
 .ciencia { background: linear-gradient(45deg, #f39c12, #e67e22); }
+.saude { background: linear-gradient(45deg, #3498db, #2980b9); }
 .cultura { background: linear-gradient(45deg, #1abc9c, #16a085); }
 
 .news-content {
@@ -542,6 +529,31 @@ header {
 .whatsapp-icon {
     font-size: 2.6rem;
     margin-bottom: 12px;
+}
+
+.whatsapp-join {
+    display: inline-block;
+    background-color: white;
+    color: #25D366;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 15px 0;
+    transition: all 0.3s;
+}
+
+.whatsapp-join:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.whatsapp-stickers {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    font-size: 1.5rem;
 }
 
 /* Ads sidebar */
@@ -858,6 +870,15 @@ header {
     color: #00b4d8;
 }
 
+.like-btn.liked {
+    color: #00b4d8;
+    font-weight: bold;
+}
+
+.like-btn.liked i {
+    color: #00b4d8;
+}
+
 .no-comments {
     text-align: center;
     padding: 20px;
@@ -1032,6 +1053,44 @@ footer {
     word-break: break-all;
 }
 
+/* Notification */
+.notification {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background: #16213e;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    z-index: 9999;
+    opacity: 0;
+    transition: all .25s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.no-results i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+.no-news {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+    grid-column: 1 / -1;
+}
+
 /* Responsiveness */
 @media (max-width: 1200px) {
     .featured-grid {
@@ -1049,7 +1108,6 @@ footer {
 
 @media (max-width: 992px) {
     .main-content { grid-template-columns: 1fr; }
-    .adsense-header { display: none; }
     .news-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
     .search-item { order: -1; width: 100%; margin: 10px 0; }
     .search-box { width: 100%; margin-left: 0; }
@@ -1061,7 +1119,9 @@ footer {
     .main-featured { grid-column: span 1; }
     .header-container { flex-wrap: wrap; }
     .user-actions { order: 3; width: 100%; justify-content: center; margin-top: 12px; }
-    .menu-toggle { display: block; }
+    .menu-toggle { 
+        display: block; 
+    }
     .nav-list {
         flex-direction: column;
         max-height: 0;
@@ -1073,12 +1133,62 @@ footer {
         right: 0;
         background: #16213e;
         z-index: 1000;
+        padding: 0;
     }
-    .nav-list.active { max-height: 500px; padding: 12px; }
+    .nav-list.active { 
+        max-height: 500px; 
+        padding: 12px; 
+    }
+    .nav-list li {
+        width: 100%;
+    }
+    .nav-list a {
+        margin: 4px 0;
+        justify-content: center;
+    }
     .footer-content { grid-template-columns: 1fr; gap: 30px; }
     .modal-content { width: 95%; margin: 20px auto; }
     #modalNewsContent { padding: 20px; }
     .news-full h2 { font-size: 1.5rem; }
     .news-full-image { height: 240px; }
-    .subscribe-options { grid-template-columns: 1fr; }
+    .user-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .user-actions button, .user-actions a {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        padding: 10px;
+    }
+    .logo-area {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    .brand-text h1 {
+        font-size: 1.3rem;
+    }
+    .section-title {
+        font-size: 1.5rem;
+    }
+    .news-card .news-image {
+        height: 160px;
+    }
+    .main-featured .news-image {
+        height: 250px;
+    }
+    .secondary-featured .news-image {
+        height: 180px;
+    }
+    .news-title {
+        font-size: 1.1rem;
+    }
+    .main-featured .news-title {
+        font-size: 1.4rem;
+    }
 }

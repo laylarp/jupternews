@@ -7,8 +7,8 @@
   <meta name="google-adsense-account" content="ca-pub-1816282885500573">
   <title>JupterNews - Notícias Atuais e Confiáveis</title>
 
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
@@ -254,5 +254,46 @@
 
   <script src="news-data.js"></script>
   <script src="script.js"></script>
+  <script>
+    // Funções auxiliares para os botões do footer
+    function showAbout() {
+      alert('JupterNews é um portal de notícias dedicado a trazer informações atualizadas e confiáveis 24 horas por dia.');
+    }
+    
+    function showContact() {
+      alert('Contato: contato@jupternews.com\nTelefone: (11) 99999-9999');
+    }
+    
+    function showPrivacy() {
+      alert('Nossa política de privacidade garante que seus dados estão seguros e são usados apenas para melhorar sua experiência.');
+    }
+    
+    function showTerms() {
+      alert('Termos de uso: Você concorda em usar este site apenas para fins legais e respeitar os direitos autorais.');
+    }
+    
+    function showCareers() {
+      alert('Envie seu currículo para: carreiras@jupternews.com');
+    }
+    
+    // Função para o player de vídeo
+    function playVideo(title) {
+      const modal = document.getElementById('videoModal');
+      const player = document.getElementById('videoPlayer');
+      
+      player.innerHTML = `
+        <div class="video-placeholder">
+          <i class="fas fa-play-circle"></i>
+          <h3>${title}</h3>
+          <p>Esta é uma demonstração do player de vídeo.</p>
+          <p>Em um ambiente real, aqui estaria o vídeo embedado do YouTube ou Vimeo.</p>
+        </div>
+      `;
+      
+      modal.style.display = 'block';
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+    }
+  </script>
 </body>
 </html>
