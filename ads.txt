@@ -1,0 +1,2 @@
+# AdSense ads.txt (colocado na raiz do site)
+google.com, pub-1816282885500573, DIRECT, f08c47fec0942fa0

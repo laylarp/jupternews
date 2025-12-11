@@ -1,0 +1,16 @@
+{
+  "name": "JupterNews",
+  "short_name": "JupterNews",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#16213e",
+  "theme_color": "#16213e",
+  "description": "Notícias do mundo em tempo real - JupterNews",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ]
+}
