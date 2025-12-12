@@ -1,5 +1,5 @@
 // ==============================================
-// JUPTERNEWS - SISTEMA PRINCIPAL
+// JUPTERNEWS - SISTEMA PRINCIPAL (COM MÍDIA)
 // ==============================================
 
 // CONFIGURAÇÕES (SEM SUPABASE PARA EVITAR ERROS)
@@ -225,6 +225,20 @@ function setupEventListeners() {
         }
     });
     
+    // Galerias (delegação)
+    document.body.addEventListener('click', (e) => {
+        // Botões de navegação de galeria
+        const galleryPrev = e.target.closest('.gallery-prev');
+        const galleryNext = e.target.closest('.gallery-next');
+        const galleryThumb = e.target.closest('.gallery-thumb');
+        const fullscreenBtn = e.target.closest('.gallery-fullscreen');
+        
+        if (galleryPrev || galleryNext || galleryThumb || fullscreenBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+    
     // Fechar modais
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', closeAllModals);
@@ -321,10 +335,15 @@ function createNewsCard(news) {
     const commentsCount = getCommentsCount(news.id);
     const views = appState.newsViews[news.id] || 0;
     
+    // Verificar se tem mídia especial
+    const hasMedia = news.media && news.media.length > 0;
+    const mediaIcon = hasMedia ? getMediaIcon(news.media[0].type) : '';
+    
     card.innerHTML = `
         <div class="news-image">
             <img src="${news.image}" alt="${escapeHtml(news.title)}" loading="lazy">
             <span class="category-label ${news.category}">${news.categoryName}</span>
+            ${mediaIcon ? `<span class="media-badge">${mediaIcon}</span>` : ''}
         </div>
         <div class="news-content">
             <h3 class="news-title">${escapeHtml(news.title)}</h3>
@@ -339,6 +358,18 @@ function createNewsCard(news) {
     
     card.addEventListener('click', () => openNewsModal(news.id));
     return card;
+}
+
+function getMediaIcon(mediaType) {
+    const icons = {
+        'video': '<i class="fas fa-video"></i>',
+        'audio': '<i class="fas fa-music"></i>',
+        'gallery': '<i class="fas fa-images"></i>',
+        'tweet': '<i class="fab fa-twitter"></i>',
+        'iframe': '<i class="fas fa-external-link-alt"></i>',
+        'custom': '<i class="fas fa-code"></i>'
+    };
+    return icons[mediaType] || '';
 }
 
 function loadMoreNews() {
@@ -362,6 +393,560 @@ function loadMoreNews() {
     appState.displayedNews = Math.min(end, currentNews.length);
     updateLoadMoreButton();
 }
+
+// ==============================================
+// FUNÇÕES PARA PROCESSAMENTO DE MÍDIA
+// ==============================================
+
+function renderMediaContent(mediaItems) {
+    if (!mediaItems || mediaItems.length === 0) return '';
+    
+    let mediaHTML = '<div class="news-media-container">';
+    
+    mediaItems.forEach((media, index) => {
+        mediaHTML += renderMediaItem(media, index);
+    });
+    
+    mediaHTML += '</div>';
+    return mediaHTML;
+}
+
+function renderMediaItem(media, index) {
+    switch (media.type) {
+        case 'video':
+            return renderVideoEmbed(media, index);
+        case 'audio':
+            return renderAudioPlayer(media, index);
+        case 'gallery':
+            return renderImageGallery(media, index);
+        case 'tweet':
+            return renderTweetEmbed(media, index);
+        case 'iframe':
+            return renderIframeEmbed(media, index);
+        case 'custom':
+            return renderCustomEmbed(media, index);
+        default:
+            return '';
+    }
+}
+
+function renderVideoEmbed(media, index) {
+    const videoId = extractYouTubeId(media.embedCode || media.url);
+    const platform = media.platform || 'youtube';
+    
+    let embedHTML = '';
+    
+    if (platform === 'youtube' && videoId) {
+        embedHTML = `
+            <div class="media-item media-video" data-index="${index}">
+                <div class="media-title">
+                    <i class="fab fa-youtube"></i>
+                    <h4>${escapeHtml(media.title || 'Vídeo')}</h4>
+                </div>
+                <div class="video-embed">
+                    <iframe 
+                        src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1"
+                        title="${escapeHtml(media.title || 'Vídeo do YouTube')}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                    ></iframe>
+                </div>
+                <div class="media-actions">
+                    <button onclick="playVideo('${escapeHtml(media.title || 'Vídeo')}', '${videoId}', 'youtube')" 
+                            class="btn-video-action">
+                        <i class="fas fa-expand"></i> Tela Cheia
+                    </button>
+                    <button onclick="shareVideo('${escapeHtml(media.title || 'Vídeo')}', '${videoId}', 'youtube')" 
+                            class="btn-video-action">
+                        <i class="fas fa-share"></i> Compartilhar
+                    </button>
+                </div>
+                ${media.caption ? `<div class="media-caption">${escapeHtml(media.caption)}</div>` : ''}
+            </div>
+        `;
+    } else if (platform === 'vimeo') {
+        const vimeoId = extractVimeoId(media.embedCode || media.url);
+        if (vimeoId) {
+            embedHTML = `
+                <div class="media-item media-video" data-index="${index}">
+                    <div class="media-title">
+                        <i class="fab fa-vimeo-v"></i>
+                        <h4>${escapeHtml(media.title || 'Vídeo')}</h4>
+                    </div>
+                    <div class="video-embed">
+                        <iframe 
+                            src="https://player.vimeo.com/video/${vimeoId}"
+                            title="${escapeHtml(media.title || 'Vídeo do Vimeo')}"
+                            frameborder="0"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowfullscreen
+                            loading="lazy"
+                        ></iframe>
+                    </div>
+                    <div class="media-actions">
+                        <button onclick="playVideo('${escapeHtml(media.title || 'Vídeo')}', '${vimeoId}', 'vimeo')" 
+                                class="btn-video-action">
+                            <i class="fas fa-expand"></i> Tela Cheia
+                        </button>
+                        <button onclick="shareVideo('${escapeHtml(media.title || 'Vídeo')}', '${vimeoId}', 'vimeo')" 
+                                class="btn-video-action">
+                            <i class="fas fa-share"></i> Compartilhar
+                        </button>
+                    </div>
+                    ${media.caption ? `<div class="media-caption">${escapeHtml(media.caption)}</div>` : ''}
+                </div>
+            `;
+        }
+    } else if (media.embedCode) {
+        // Embed code direto
+        embedHTML = `
+            <div class="media-item media-video" data-index="${index}">
+                <div class="media-title">
+                    <i class="fas fa-video"></i>
+                    <h4>${escapeHtml(media.title || 'Vídeo')}</h4>
+                </div>
+                <div class="video-embed">
+                    ${media.embedCode}
+                </div>
+                ${media.caption ? `<div class="media-caption">${escapeHtml(media.caption)}</div>` : ''}
+            </div>
+        `;
+    }
+    
+    return embedHTML;
+}
+
+function renderAudioPlayer(media, index) {
+    return `
+        <div class="media-item media-audio" data-index="${index}">
+            <div class="media-title">
+                <i class="fas fa-music"></i>
+                <h4>${escapeHtml(media.title || 'Áudio')}</h4>
+                ${media.duration ? `<span class="media-duration">${media.duration}</span>` : ''}
+            </div>
+            <div class="audio-player">
+                <audio 
+                    controls 
+                    preload="metadata"
+                    ${media.poster ? `poster="${media.poster}"` : ''}
+                >
+                    <source src="${media.audioUrl}" type="audio/mpeg">
+                    Seu navegador não suporta o elemento de áudio.
+                </audio>
+            </div>
+            ${media.caption ? `<div class="media-caption">${escapeHtml(media.caption)}</div>` : ''}
+            ${media.description ? `<div class="media-description">${escapeHtml(media.description)}</div>` : ''}
+        </div>
+    `;
+}
+
+function renderImageGallery(media, index) {
+    const galleryId = `gallery-${index}-${Date.now()}`;
+    
+    let thumbnails = '';
+    let fullImages = '';
+    
+    (media.images || []).forEach((img, imgIndex) => {
+        thumbnails += `
+            <div class="gallery-thumb" data-index="${imgIndex}">
+                <img src="${img}" alt="Imagem ${imgIndex + 1}" loading="lazy">
+            </div>
+        `;
+        
+        fullImages += `
+            <div class="gallery-slide ${imgIndex === 0 ? 'active' : ''}">
+                <img src="${img}" alt="Imagem ${imgIndex + 1}">
+                <div class="slide-counter">${imgIndex + 1} / ${media.images.length}</div>
+            </div>
+        `;
+    });
+    
+    return `
+        <div class="media-item media-gallery" data-index="${index}" id="${galleryId}">
+            <div class="media-title">
+                <i class="fas fa-images"></i>
+                <h4>${escapeHtml(media.title || 'Galeria de Imagens')}</h4>
+            </div>
+            <div class="gallery-container">
+                <div class="gallery-main">
+                    ${fullImages}
+                    <button class="gallery-prev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="gallery-next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="gallery-thumbnails">
+                    ${thumbnails}
+                </div>
+            </div>
+            ${media.caption ? `<div class="media-caption">${escapeHtml(media.caption)}</div>` : ''}
+            <div class="gallery-controls">
+                <button class="gallery-fullscreen" title="Tela cheia">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderTweetEmbed(media, index) {
+    return `
+        <div class="media-item media-tweet" data-index="${index}">
+            <div class="media-title">
+                <i class="fab fa-twitter"></i>
+                <h4>Tweet de @${escapeHtml(media.username || 'Twitter')}</h4>
+            </div>
+            <div class="tweet-embed" data-tweet-id="${media.tweetId}">
+                <div class="tweet-placeholder">
+                    <i class="fab fa-twitter"></i>
+                    <p>Carregando tweet...</p>
+                </div>
+            </div>
+            <div class="tweet-actions">
+                <a href="https://twitter.com/${media.username}/status/${media.tweetId}" 
+                   target="_blank" 
+                   rel="noopener noreferrer">
+                    <i class="fas fa-external-link-alt"></i> Ver no Twitter
+                </a>
+            </div>
+        </div>
+    `;
+}
+
+function renderIframeEmbed(media, index) {
+    return `
+        <div class="media-item media-iframe" data-index="${index}">
+            <div class="media-title">
+                <i class="fas fa-window-restore"></i>
+                <h4>${escapeHtml(media.title || 'Conteúdo Interativo')}</h4>
+            </div>
+            <div class="iframe-container">
+                <iframe 
+                    src="${media.url}"
+                    title="${escapeHtml(media.title || 'Conteúdo embutido')}"
+                    frameborder="0"
+                    scrolling="${media.scrolling || 'auto'}"
+                    height="${media.height || '500'}"
+                    loading="lazy"
+                ></iframe>
+            </div>
+            ${media.caption ? `<div class="media-caption">${escapeHtml(media.caption)}</div>` : ''}
+        </div>
+    `;
+}
+
+function renderCustomEmbed(media, index) {
+    return `
+        <div class="media-item media-custom" data-index="${index}">
+            <div class="media-title">
+                <i class="fas fa-code"></i>
+                <h4>${escapeHtml(media.title || 'Conteúdo Personalizado')}</h4>
+            </div>
+            <div class="custom-embed">
+                ${media.html || media.content || ''}
+            </div>
+            ${media.caption ? `<div class="media-caption">${escapeHtml(media.caption)}</div>` : ''}
+        </div>
+    `;
+}
+
+// Funções auxiliares para processamento de URLs
+function extractYouTubeId(url) {
+    if (!url) return null;
+    
+    // Padrões de URLs do YouTube
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+        /youtube\.com\/v\/([^&\n?#]+)/,
+        /youtube\.com\/embed\/([^&\n?#]+)/,
+        /youtu\.be\/([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    
+    return url;
+}
+
+function extractVimeoId(url) {
+    if (!url) return null;
+    
+    const pattern = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/;
+    const match = url.match(pattern);
+    
+    return match ? match[1] : null;
+}
+
+// Função para inicializar galerias
+function initMediaGalleries() {
+    document.querySelectorAll('.media-gallery').forEach(gallery => {
+        const main = gallery.querySelector('.gallery-main');
+        const slides = gallery.querySelectorAll('.gallery-slide');
+        const thumbs = gallery.querySelectorAll('.gallery-thumb');
+        const prevBtn = gallery.querySelector('.gallery-prev');
+        const nextBtn = gallery.querySelector('.gallery-next');
+        const fullscreenBtn = gallery.querySelector('.gallery-fullscreen');
+        
+        let currentSlide = 0;
+        
+        function showSlide(index) {
+            // Validar índice
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+            
+            // Atualizar slides
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            
+            // Atualizar thumbnails
+            thumbs.forEach(thumb => thumb.classList.remove('active'));
+            thumbs[index].classList.add('active');
+            
+            currentSlide = index;
+        }
+        
+        // Event listeners
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => showSlide(currentSlide - 1));
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => showSlide(currentSlide + 1));
+        }
+        
+        thumbs.forEach((thumb, index) => {
+            thumb.addEventListener('click', () => showSlide(index));
+        });
+        
+        // Tela cheia
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                gallery.classList.toggle('fullscreen');
+                fullscreenBtn.innerHTML = gallery.classList.contains('fullscreen') 
+                    ? '<i class="fas fa-compress"></i>' 
+                    : '<i class="fas fa-expand"></i>';
+            });
+        }
+        
+        // Navegação por teclado
+        gallery.addEventListener('keydown', (e) => {
+            if (gallery.classList.contains('fullscreen')) {
+                if (e.key === 'ArrowLeft') showSlide(currentSlide - 1);
+                if (e.key === 'ArrowRight') showSlide(currentSlide + 1);
+                if (e.key === 'Escape') {
+                    gallery.classList.remove('fullscreen');
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+        });
+        
+        // Inicializar
+        showSlide(0);
+    });
+}
+
+// Função para carregar tweets via Twitter Widget API
+function loadTwitterWidgets() {
+    if (typeof twttr !== 'undefined') {
+        twttr.widgets.load();
+    } else {
+        // Carregar Twitter Widget API se não estiver disponível
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.charset = 'utf-8';
+        document.body.appendChild(script);
+        
+        // Configurar callback para quando o script carregar
+        script.onload = () => {
+            if (typeof twttr !== 'undefined') {
+                twttr.widgets.load();
+            }
+        };
+    }
+}
+
+// ==============================================
+// MODAL DE NOTÍCIAS (ATUALIZADO COM MÍDIA)
+// ==============================================
+
+async function openNewsModal(newsId) {
+    const news = appState.currentNews.find(n => n.id === newsId);
+    
+    if (!news) {
+        showNotification('Notícia não encontrada');
+        return;
+    }
+    
+    appState.currentNewsId = newsId;
+    
+    // Registrar visualização
+    appState.newsViews[newsId] = (appState.newsViews[newsId] || 0) + 1;
+    localStorage.setItem(STORAGE_VIEWS_KEY, JSON.stringify(appState.newsViews));
+    
+    // Atualizar conteúdo
+    const modalContent = document.getElementById('modalNewsContent');
+    const commentsCount = getCommentsCount(newsId);
+    
+    // Preparar conteúdo completo com mídia
+    let fullContent = news.fullContent || '';
+    
+    // Adicionar conteúdo de mídia se existir
+    if (news.media && news.media.length > 0) {
+        const mediaContent = renderMediaContent(news.media);
+        // Inserir mídia após o primeiro parágrafo ou no final
+        if (fullContent.includes('</p>')) {
+            const firstPEnd = fullContent.indexOf('</p>') + 4;
+            fullContent = fullContent.slice(0, firstPEnd) + mediaContent + fullContent.slice(firstPEnd);
+        } else {
+            fullContent += mediaContent;
+        }
+    }
+    
+    if (modalContent) {
+        modalContent.innerHTML = `
+            <div class="news-full">
+                <h2>${escapeHtml(news.title)}</h2>
+                <div class="news-meta-full">
+                    <span><i class="far fa-clock"></i> ${news.time}</span>
+                    <span><i class="far fa-comment"></i> <span id="modalCommentCount">${commentsCount}</span> comentários</span>
+                    <span><i class="far fa-eye"></i> ${appState.newsViews[newsId] || 0} visualizações</span>
+                    <span class="category-label ${news.category}">${news.categoryName}</span>
+                </div>
+                <div class="news-full-image">
+                    <img src="${news.image}" alt="${escapeHtml(news.title)}" loading="lazy">
+                </div>
+                <div class="news-body">${fullContent}</div>
+            </div>
+        `;
+        
+        // Inicializar componentes de mídia
+        setTimeout(() => {
+            initMediaGalleries();
+            loadTwitterWidgets();
+            
+            // Adicionar event listeners para as galerias
+            document.querySelectorAll('.gallery-prev, .gallery-next, .gallery-thumb, .gallery-fullscreen').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        }, 100);
+    }
+    
+    // Carregar comentários
+    await loadComments(newsId);
+    
+    // Abrir modal
+    openModal('newsModal');
+}
+
+// ==============================================
+// PLAYER DE VÍDEO EM MODAL SEPARADO
+// ==============================================
+
+window.playVideo = function(title, videoId, platform = 'youtube') {
+    const modal = document.getElementById('videoModal');
+    const player = document.getElementById('videoPlayer');
+    
+    let embedUrl = '';
+    
+    if (platform === 'youtube' && videoId) {
+        embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+    } else if (platform === 'vimeo' && videoId) {
+        embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
+    }
+    
+    if (player) {
+        if (embedUrl) {
+            player.innerHTML = `
+                <div class="video-player-embed">
+                    <iframe 
+                        src="${embedUrl}"
+                        title="${escapeHtml(title)}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                    ></iframe>
+                </div>
+                <div class="video-player-info">
+                    <h3>${escapeHtml(title)}</h3>
+                    <div class="video-actions">
+                        <button onclick="toggleFullscreenVideo()" class="btn-video-action">
+                            <i class="fas fa-expand"></i> Tela Cheia
+                        </button>
+                        <button onclick="shareVideo('${escapeHtml(title)}', '${videoId}', '${platform}')" class="btn-video-action">
+                            <i class="fas fa-share"></i> Compartilhar
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            player.innerHTML = `
+                <div class="video-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <h3>${escapeHtml(title)}</h3>
+                    <p>Este é um exemplo de player de vídeo.</p>
+                </div>
+            `;
+        }
+    }
+    
+    openModal('videoModal');
+};
+
+// Funções auxiliares para o player de vídeo
+window.toggleFullscreenVideo = function() {
+    const player = document.getElementById('videoPlayer');
+    const iframe = player.querySelector('iframe');
+    
+    if (iframe) {
+        if (!document.fullscreenElement) {
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) {
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) {
+                iframe.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    }
+};
+
+window.shareVideo = function(title, videoId, platform) {
+    let url = '';
+    
+    if (platform === 'youtube') {
+        url = `https://youtube.com/watch?v=${videoId}`;
+    } else if (platform === 'vimeo') {
+        url = `https://vimeo.com/${videoId}`;
+    }
+    
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: `Assista: ${title}`,
+            url: url
+        });
+    } else {
+        // Fallback para copiar link
+        navigator.clipboard.writeText(url)
+            .then(() => showNotification('Link copiado para a área de transferência!'))
+            .catch(() => alert(`Compartilhe este link:\n${url}`));
+    }
+};
 
 // ==============================================
 // FILTRAGEM E BUSCA
@@ -504,53 +1089,6 @@ function searchNews() {
     // Scroll para resultados
     document.querySelector('.news-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     showNotification(`Encontradas ${filtered.length} notícias`);
-}
-
-// ==============================================
-// MODAL DE NOTÍCIAS
-// ==============================================
-
-async function openNewsModal(newsId) {
-    const news = appState.currentNews.find(n => n.id === newsId);
-    
-    if (!news) {
-        showNotification('Notícia não encontrada');
-        return;
-    }
-    
-    appState.currentNewsId = newsId;
-    
-    // Registrar visualização
-    appState.newsViews[newsId] = (appState.newsViews[newsId] || 0) + 1;
-    localStorage.setItem(STORAGE_VIEWS_KEY, JSON.stringify(appState.newsViews));
-    
-    // Atualizar conteúdo
-    const modalContent = document.getElementById('modalNewsContent');
-    const commentsCount = getCommentsCount(newsId);
-    
-    if (modalContent) {
-        modalContent.innerHTML = `
-            <div class="news-full">
-                <h2>${escapeHtml(news.title)}</h2>
-                <div class="news-meta-full">
-                    <span><i class="far fa-clock"></i> ${news.time}</span>
-                    <span><i class="far fa-comment"></i> <span id="modalCommentCount">${commentsCount}</span> comentários</span>
-                    <span><i class="far fa-eye"></i> ${appState.newsViews[newsId] || 0} visualizações</span>
-                    <span class="category-label ${news.category}">${news.categoryName}</span>
-                </div>
-                <div class="news-full-image">
-                    <img src="${news.image}" alt="${escapeHtml(news.title)}">
-                </div>
-                <div class="news-body">${news.fullContent || ''}</div>
-            </div>
-        `;
-    }
-    
-    // Carregar comentários
-    await loadComments(newsId);
-    
-    // Abrir modal
-    openModal('newsModal');
 }
 
 // ==============================================
@@ -945,26 +1483,6 @@ function initAdSense() {
     if (window.adsbygoogle) {
         (adsbygoogle = window.adsbygoogle || []).push({});
     }
-}
-
-function playVideo(title) {
-    const modal = document.getElementById('videoModal');
-    const player = document.getElementById('videoPlayer');
-    
-    if (!modal || !player) return;
-    
-    player.innerHTML = `
-        <div class="video-placeholder">
-            <i class="fas fa-play-circle"></i>
-            <h3>${escapeHtml(title)}</h3>
-            <p>Esta é uma demonstração do player de vídeo.</p>
-            <p>Em um ambiente real, aqui estaria o vídeo embedado do YouTube ou Vimeo.</p>
-        </div>
-    `;
-    
-    modal.style.display = 'block';
-    document.body.classList.add('modal-open');
-    document.body.style.overflow = 'hidden';
 }
 
 // ==============================================

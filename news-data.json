@@ -103,6 +103,99 @@
       "views": 0,
       "comments": 0,
       "date": "2023-12-15T08:00:00Z"
+    },
+    {
+      "id": 12,
+      "title": "Exemplo: Notícia com Vídeo",
+      "excerpt": "Esta notícia inclui um vídeo embutido do YouTube.",
+      "fullContent": "<p>Esta notícia demonstra a capacidade de embutir vídeos diretamente no conteúdo.</p>",
+      "media": [
+        {
+          "type": "video",
+          "platform": "youtube",
+          "embedCode": "https://www.youtube.com/embed/1gtOTSm_VeM?si=4B9Y4INZ_OzJHkpc",
+          "title": "Vídeo explicativo sobre o tema",
+          "thumbnail": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+        }
+      ],
+      "category": "tecnologia",
+      "categoryName": "Tecnologia",
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176",
+      "time": "Há 2 horas",
+      "views": 0,
+      "comments": 0,
+      "date": "2024-03-15T10:00:00Z"
+    },
+    {
+      "id": 13,
+      "title": "Exemplo: Podcast e Imagens",
+      "excerpt": "Notícia com player de áudio e galeria de fotos.",
+      "fullContent": "<p>Esta notícia inclui um player de áudio para podcasts e uma galeria de imagens.</p>",
+      "media": [
+        {
+          "type": "audio",
+          "title": "Podcast sobre o assunto",
+          "audioUrl": "https://example.com/podcast.mp3",
+          "duration": "45:30"
+        },
+        {
+          "type": "gallery",
+          "images": [
+            "https://images.unsplash.com/photo-1581091226825-c6ae7368b1e1",
+            "https://images.unsplash.com/photo-1581091226033-d5c48150dbaa",
+            "https://images.unsplash.com/photo-1581091226174-81a0cf6c2d94"
+          ],
+          "title": "Galeria de Imagens"
+        }
+      ],
+      "category": "cultura",
+      "categoryName": "Cultura",
+      "image": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819",
+      "time": "Há 1 dia",
+      "views": 0,
+      "comments": 0,
+      "date": "2024-03-14T10:00:00Z"
+    },
+    {
+      "id": 14,
+      "title": "Exemplo: Tweet Embutido",
+      "excerpt": "Notícia que inclui um tweet diretamente do Twitter.",
+      "fullContent": "<p>Esta notícia mostra como embutir tweets e posts de redes sociais.</p>",
+      "media": [
+        {
+          "type": "tweet",
+          "tweetId": "1768388345587007865",
+          "username": "TwitterDev"
+        }
+      ],
+      "category": "urgentes",
+      "categoryName": "Urgentes",
+      "image": "https://images.unsplash.com/photo-1611605698335-8b1569810432",
+      "time": "Há 30 minutos",
+      "views": 0,
+      "comments": 0,
+      "date": "2024-03-15T11:30:00Z"
+    },
+    {
+      "id": 15,
+      "title": "Exemplo: Iframe Personalizado",
+      "excerpt": "Notícia com conteúdo HTML/iframe personalizado.",
+      "fullContent": "<p>Esta notícia inclui um iframe personalizado com conteúdo externo.</p>",
+      "media": [
+        {
+          "type": "iframe",
+          "url": "https://example.com/widget",
+          "title": "Widget Interativo",
+          "height": "400"
+        }
+      ],
+      "category": "ciencia",
+      "categoryName": "Ciência",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d",
+      "time": "Há 3 horas",
+      "views": 0,
+      "comments": 0,
+      "date": "2024-03-15T09:00:00Z"
     }
   ]
 }
