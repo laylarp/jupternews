@@ -182,11 +182,11 @@ function handleNavClick(e) {
 // Funções do Supabase
 async function fetchComments(newsId) {
     try {
-        // Verificar cache primeiro (5 minutos)
+        // Verificar cache primeiro (2 minutos)
         const cacheKey = `comments_${newsId}`;
         const cached = appState.commentsCache[cacheKey];
         
-        if (cached && (Date.now() - cached.timestamp < 5 * 60 * 1000)) {
+        if (cached && (Date.now() - cached.timestamp < 2 * 60 * 1000)) {
             return cached.data;
         }
         
@@ -197,7 +197,20 @@ async function fetchComments(newsId) {
             .eq('news_id', newsId)
             .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro ao buscar comentários:', error);
+            return [];
+        }
+        
+        if (!data || data.length === 0) {
+            // Atualizar cache vazio
+            appState.commentsCache[cacheKey] = {
+                data: [],
+                timestamp: Date.now()
+            };
+            localStorage.setItem('jupterNewsCommentsCache', JSON.stringify(appState.commentsCache));
+            return [];
+        }
         
         // Buscar likes do usuário
         const commentIds = data.map(c => c.id);
@@ -236,8 +249,11 @@ async function fetchComments(newsId) {
 
 async function addComment(newsId, text) {
     try {
+        // Criar ID único baseado em timestamp
+        const commentId = Date.now();
+        
         const newComment = {
-            id: Date.now(), // Usar timestamp como ID único
+            id: commentId,
             news_id: newsId,
             author: appState.userName,
             text: text,
@@ -245,11 +261,15 @@ async function addComment(newsId, text) {
             created_at: new Date().toISOString()
         };
         
-        const { data, error } = await supabaseClient
+        // Inserir no Supabase
+        const { error } = await supabaseClient
             .from('comments')
             .insert([newComment]);
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro ao inserir comentário:', error);
+            throw error;
+        }
         
         // Limpar cache para esta notícia
         delete appState.commentsCache[`comments_${newsId}`];
@@ -258,7 +278,7 @@ async function addComment(newsId, text) {
         return {
             ...newComment,
             date: 'Agora mesmo',
-            timestamp: newComment.id,
+            timestamp: commentId,
             likedByUser: false
         };
     } catch (error) {
@@ -277,6 +297,8 @@ async function toggleLike(newsId, commentId) {
             .eq('user_hash', appState.userId)
             .single();
         
+        let newLikes;
+        
         if (existingLike) {
             // Remover like
             await supabaseClient
@@ -284,8 +306,20 @@ async function toggleLike(newsId, commentId) {
                 .delete()
                 .eq('id', existingLike.id);
             
-            // Decrementar contador
-            await supabaseClient.rpc('decrement_like', { comment_id: commentId });
+            // Buscar likes atuais
+            const { data: comment } = await supabaseClient
+                .from('comments')
+                .select('likes')
+                .eq('id', commentId)
+                .single();
+            
+            newLikes = Math.max((comment?.likes || 0) - 1, 0);
+            
+            // Atualizar contador
+            await supabaseClient
+                .from('comments')
+                .update({ likes: newLikes })
+                .eq('id', commentId);
             
             showNotification('Curtida removida');
         } else {
@@ -294,27 +328,80 @@ async function toggleLike(newsId, commentId) {
                 .from('comment_likes')
                 .insert([{
                     comment_id: commentId,
-                    user_hash: appState.userId
+                    user_hash: appState.userId,
+                    created_at: new Date().toISOString()
                 }]);
             
-            // Incrementar contador
-            await supabaseClient.rpc('increment_like', { comment_id: commentId });
+            // Buscar likes atuais
+            const { data: comment } = await supabaseClient
+                .from('comments')
+                .select('likes')
+                .eq('id', commentId)
+                .single();
+            
+            newLikes = (comment?.likes || 0) + 1;
+            
+            // Atualizar contador
+            await supabaseClient
+                .from('comments')
+                .update({ likes: newLikes })
+                .eq('id', commentId);
             
             showNotification('Comentário curtido!');
         }
         
-        // Limpar cache
+        // Atualizar interface IMEDIATAMENTE
+        const likeBtn = document.querySelector(`.like-btn[data-comment-id="${commentId}"]`);
+        if (likeBtn) {
+            const likeCountSpan = likeBtn.querySelector('.like-count');
+            if (likeCountSpan) {
+                likeCountSpan.textContent = newLikes;
+                likeBtn.classList.toggle('liked', !existingLike);
+            }
+        }
+        
+        // Limpar cache para forçar atualização
         delete appState.commentsCache[`comments_${newsId}`];
         localStorage.setItem('jupterNewsCommentsCache', JSON.stringify(appState.commentsCache));
         
-        // Recarregar comentários se o modal estiver aberto
-        if (appState.currentNewsId === newsId) {
-            await loadComments(newsId);
-        }
+        // Atualizar contadores gerais após 1 segundo
+        setTimeout(async () => {
+            if (appState.currentNewsId === newsId) {
+                await loadComments(newsId);
+            }
+            // Atualizar contadores nas notícias
+            await updateNewsCounters();
+        }, 1000);
         
     } catch (error) {
         console.error('Erro ao alternar like:', error);
-        showNotification('Erro ao processar curtida');
+        showNotification('Erro ao processar curtida. Tente novamente.');
+    }
+}
+
+async function updateNewsCounters() {
+    // Atualizar notícias em destaque
+    if (featuredContainer) {
+        await loadFeaturedNews();
+    }
+    
+    // Atualizar notícias na lista
+    if (newsContainer) {
+        const newsCards = newsContainer.querySelectorAll('.news-card');
+        for (const card of newsCards) {
+            const newsId = parseInt(card.getAttribute('data-id'), 10);
+            const comments = await fetchComments(newsId);
+            const commentsCount = comments.length;
+            
+            // Atualizar contador de comentários
+            const commentSpan = card.querySelector('.news-meta span:nth-child(2)');
+            if (commentSpan) {
+                const icon = commentSpan.querySelector('i');
+                commentSpan.innerHTML = '';
+                if (icon) commentSpan.appendChild(icon);
+                commentSpan.appendChild(document.createTextNode(` ${commentsCount}`));
+            }
+        }
     }
 }
 
@@ -342,7 +429,7 @@ async function loadFeaturedNews() {
         article.className = index === 0 ? 'main-featured' : 'secondary-featured';
         article.setAttribute('data-id', news.id);
         
-        // Buscar contagem de comentários em tempo real
+        // Buscar contagem de comentários
         const comments = await fetchComments(news.id);
         const commentsCount = comments.length;
         const isMain = index === 0;

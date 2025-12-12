@@ -1544,4 +1544,97 @@ footer {
         font-size: 1.1rem;
     }
 }
+
+/* Estilo para botões de like */
+.like-btn {
+    background: none;
+    border: 1px solid #e0e0e0;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+}
+
+.like-btn:hover {
+    background-color: rgba(0, 180, 216, 0.1);
+    border-color: #00b4d8;
+}
+
+.like-btn.liked {
+    background-color: rgba(0, 180, 216, 0.15);
+    border-color: #00b4d8;
+    color: #00b4d8;
+    font-weight: 500;
+}
+
+.like-btn.liked i {
+    color: #00b4d8;
+}
+
+.like-btn i {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.like-btn.liked i {
+    color: #00b4d8;
+}
+
+.comment-actions-comment {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* Animações para notificações */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #00b4d8;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+    transition: all 0.3s;
+}
+
+.notification i {
+    font-size: 1.2rem;
+}
+
+/* Spinner para botões carregando */
+.fa-spinner.fa-spin {
+    animation: fa-spin 2s infinite linear;
+}
+
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 }
