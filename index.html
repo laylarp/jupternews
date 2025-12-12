@@ -1,274 +1,313 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#16213e" />
-  <meta name="google-adsense-account" content="ca-pub-1816282885500573">
-  <title>JupterNews - Notícias Atuais e Confiáveis</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="logo.svg" type="image/svg+xml" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
-  <!-- AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1816282885500573" crossorigin="anonymous"></script>
-
-  <!-- Estilos -->
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#16213e">
+    <meta name="google-adsense-account" content="ca-pub-1816282885500573">
+    <title>JupterNews - Notícias Atuais e Confiáveis</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <!-- AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1816282885500573" crossorigin="anonymous"></script>
+    
+    <!-- Font Awesome LOCAL (para evitar bloqueio do navegador) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fallback local se CDN bloquear -->
+    <style>
+        .fa, .fas, .far, .fal, .fad, .fab {
+            font-family: 'Font Awesome 6 Free' !important;
+            font-weight: 900;
+        }
+        .far {
+            font-weight: 400;
+        }
+    </style>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Header -->
-  <header>
-    <div class="header-container">
-      <div class="logo-area">
-        <div class="logo-inline" aria-hidden="true">
-          <svg id="jupter-logo" width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JupterNews logo">
-            <circle cx="32" cy="32" r="28" fill="#00b4d8"/>
-            <path d="M8 34c15 10 34 10 48 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="44" cy="20" r="6" fill="#90e0ef"/>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <h1><span class="brand">JupterNews</span></h1>
-          <p class="tagline">Notícias do mundo em tempo real</p>
-        </div>
-      </div>
-
-      <div class="user-actions">
-        <button class="subscribe-btn" id="subscribeBtn"><i class="fas fa-bell"></i> Assinar</button>
-        <a id="whatsappChannel" href="https://whatsapp.com/channel/0029Vb7IQJFAu3aLGetT6r00" class="whatsapp-btn" target="_blank" rel="noopener">
-          <i class="fab fa-whatsapp"></i> WhatsApp
-        </a>
-        <button class="menu-toggle" id="menuToggle">
-          <i class="fas fa-bars"></i>
-        </button>
-      </div>
-    </div>
-
-    <nav class="main-nav">
-      <ul class="nav-list" id="navList">
-        <li><a href="#" class="nav-link active" data-category="all"><i class="fas fa-home"></i> Início</a></li>
-        <li><a href="#" class="nav-link" data-category="urgentes"><i class="fas fa-bolt"></i> Urgentes</a></li>
-        <li><a href="#" class="nav-link" data-category="economia"><i class="fas fa-chart-line"></i> Economia</a></li>
-        <li><a href="#" class="nav-link" data-category="ciencia"><i class="fas fa-flask"></i> Ciência</a></li>
-        <li><a href="#" class="nav-link" data-category="esportes"><i class="fas fa-futbol"></i> Esportes</a></li>
-        <li><a href="#" class="nav-link" data-category="cultura"><i class="fas fa-music"></i> Cultura</a></li>
-        <li><a href="#" class="nav-link" data-category="tecnologia"><i class="fas fa-laptop-code"></i> Tecnologia</a></li>
-        <li><a href="#" class="nav-link" data-category="saude"><i class="fas fa-heartbeat"></i> Saúde</a></li>
-        <li class="search-item">
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Buscar notícias...">
-            <button id="searchBtn">Buscar</button>
-          </div>
-        </li>
-      </ul>
-    </nav>
-
-    <div class="breaking-news">
-      <span class="breaking-label"><i class="fas fa-bolt"></i> URGENTE:</span>
-      <marquee>Inteligência Artificial revoluciona setor de saúde • Preços dos alimentos caem pelo 3º mês consecutivo</marquee>
-    </div>
-  </header>
-
-  <!-- Conteúdo Principal -->
-  <main class="container">
-    <div class="content-wrapper">
-      <!-- Destaques -->
-      <section class="featured-news">
-        <h2 class="section-title"><i class="fas fa-star"></i> <span id="sectionTitle">Destaques do Dia</span></h2>
-        <div class="featured-grid" id="featuredContainer"></div>
-      </section>
-
-      <!-- AdSense 1 -->
-      <div class="adsense-middle">
-        <ins class="adsbygoogle"
-             style="display:block; text-align:center;"
-             data-ad-layout="in-article"
-             data-ad-format="fluid"
-             data-ad-client="ca-pub-1816282885500573"
-             data-ad-slot="9876543210"></ins>
-      </div>
-
-      <!-- Notícias e Sidebar -->
-      <div class="main-content">
-        <section class="news-list">
-          <h2 class="section-title"><i class="fas fa-newspaper"></i> <span id="newsListTitle">Últimas Notícias</span></h2>
-          <div id="newsContainer" class="news-grid"></div>
-          <div class="load-more">
-            <button id="loadMoreBtn"><i class="fas fa-plus"></i> Carregar Mais Notícias</button>
-          </div>
-        </section>
-
-        <aside class="sidebar">
-          <!-- Vídeos -->
-          <div class="sidebar-section">
-            <h3><i class="fas fa-play-circle"></i> Vídeos em Destaque</h3>
-            <div class="video-item" onclick="playVideo('Lançamento do Novo Foguete Espacial')">
-              <div class="video-thumbnail">
-                <img src="https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?auto=format&fit=crop&w=400&q=80" alt="Foguete Espacial">
-                <div class="play-button"><i class="fas fa-play"></i></div>
-              </div>
-              <h4>Lançamento do Novo Foguete Espacial</h4>
-              <span class="video-duration">3:45</span>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-inline" aria-hidden="true">
+                    <svg id="jupter-logo" width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JupterNews logo">
+                        <circle cx="32" cy="32" r="28" fill="#00b4d8"/>
+                        <path d="M8 34c15 10 34 10 48 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="44" cy="20" r="6" fill="#90e0ef"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1><span class="brand">JupterNews</span></h1>
+                    <p class="tagline">Notícias do mundo em tempo real</p>
+                </div>
             </div>
-            <div class="video-item" onclick="playVideo('Entrevista com Cientista da NASA')">
-              <div class="video-thumbnail">
-                <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=400&q=80" alt="Entrevista NASA">
-                <div class="play-button"><i class="fas fa-play"></i></div>
-              </div>
-              <h4>Entrevista Exclusiva com Cientista da NASA</h4>
-              <span class="video-duration">5:20</span>
+
+            <div class="user-actions">
+                <button class="subscribe-btn" id="subscribeBtn"><i class="fas fa-bell"></i> Assinar</button>
+                <a id="whatsappChannel" href="https://whatsapp.com/channel/0029Vb7IQJFAu3aLGetT6r00" class="whatsapp-btn" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
-          </div>
+        </div>
 
-          <!-- WhatsApp -->
-          <div class="sidebar-section whatsapp-channel">
-            <h3><i class="fab fa-whatsapp"></i> Nosso Canal</h3>
-            <div class="whatsapp-info">
-              <div class="whatsapp-icon"><i class="fab fa-whatsapp"></i></div>
-              <p>Receba as notícias urgentes diretamente no WhatsApp!</p>
-              <a id="whatsappJoin" href="https://whatsapp.com/channel/0029Vb7IQJFAu3aLGetT6r00" class="whatsapp-join" target="_blank" rel="noopener">
-                <i class="fab fa-whatsapp"></i> Entrar no Canal
-              </a>
-              <div class="whatsapp-stickers">
-                <span class="sticker">🚀</span>
-                <span class="sticker">📰</span>
-                <span class="sticker">⭐</span>
-                <span class="sticker">🔔</span>
-                <span class="sticker">🌍</span>
-              </div>
+        <nav class="main-nav">
+            <ul class="nav-list" id="navList">
+                <li><a href="#" class="nav-link active" data-category="all"><i class="fas fa-home"></i> Início</a></li>
+                <li><a href="#" class="nav-link" data-category="urgentes"><i class="fas fa-bolt"></i> Urgentes</a></li>
+                <li><a href="#" class="nav-link" data-category="economia"><i class="fas fa-chart-line"></i> Economia</a></li>
+                <li><a href="#" class="nav-link" data-category="ciencia"><i class="fas fa-flask"></i> Ciência</a></li>
+                <li><a href="#" class="nav-link" data-category="esportes"><i class="fas fa-futbol"></i> Esportes</a></li>
+                <li><a href="#" class="nav-link" data-category="cultura"><i class="fas fa-music"></i> Cultura</a></li>
+                <li><a href="#" class="nav-link" data-category="tecnologia"><i class="fas fa-laptop-code"></i> Tecnologia</a></li>
+                <li><a href="#" class="nav-link" data-category="saude"><i class="fas fa-heartbeat"></i> Saúde</a></li>
+                <li class="search-item">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar notícias...">
+                        <button id="searchBtn">Buscar</button>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="breaking-news">
+            <span class="breaking-label"><i class="fas fa-bolt"></i> URGENTE:</span>
+            <marquee>Inteligência Artificial revoluciona setor de saúde • Preços dos alimentos caem pelo 3º mês consecutivo</marquee>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="container">
+        <div class="content-wrapper">
+            <!-- Destaques -->
+            <section class="featured-news">
+                <h2 class="section-title"><i class="fas fa-star"></i> <span id="sectionTitle">Destaques do Dia</span></h2>
+                <div class="featured-grid" id="featuredContainer"></div>
+            </section>
+
+            <!-- AdSense 1 -->
+            <div class="adsense-middle">
+                <ins class="adsbygoogle"
+                     style="display:block; text-align:center;"
+                     data-ad-layout="in-article"
+                     data-ad-format="fluid"
+                     data-ad-client="ca-pub-1816282885500573"
+                     data-ad-slot="9876543210"></ins>
             </div>
-          </div>
 
-          <!-- AdSense 2 -->
-          <div class="sidebar-section adsense-sidebar">
-            <h3><i class="fas fa-ad"></i> Patrocinado</h3>
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-format="rectangle"
-                 data-ad-client="ca-pub-1816282885500573"
-                 data-ad-slot="5678901234"></ins>
-          </div>
+            <!-- Notícias e Sidebar -->
+            <div class="main-content">
+                <section class="news-list">
+                    <h2 class="section-title"><i class="fas fa-newspaper"></i> <span id="newsListTitle">Últimas Notícias</span></h2>
+                    <div id="newsContainer" class="news-grid"></div>
+                    <div class="load-more">
+                        <button id="loadMoreBtn"><i class="fas fa-plus"></i> Carregar Mais Notícias</button>
+                    </div>
+                </section>
 
-          <!-- Mais Lidas -->
-          <div class="sidebar-section">
-            <h3><i class="fas fa-chart-line"></i> Mais Lidas Hoje</h3>
-            <ol class="top-news" id="topNewsList"></ol>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </main>
+                <aside class="sidebar">
+                    <!-- Vídeos -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-play-circle"></i> Vídeos em Destaque</h3>
+                        <div class="video-item" data-video-title="Lançamento do Novo Foguete Espacial">
+                            <div class="video-thumbnail">
+                                <img src="https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?auto=format&fit=crop&w=400&q=80" alt="Foguete Espacial">
+                                <div class="play-button"><i class="fas fa-play"></i></div>
+                            </div>
+                            <h4>Lançamento do Novo Foguete Espacial</h4>
+                            <span class="video-duration">3:45</span>
+                        </div>
+                        <div class="video-item" data-video-title="Entrevista com Cientista da NASA">
+                            <div class="video-thumbnail">
+                                <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=400&q=80" alt="Entrevista NASA">
+                                <div class="play-button"><i class="fas fa-play"></i></div>
+                            </div>
+                            <h4>Entrevista Exclusiva com Cientista da NASA</h4>
+                            <span class="video-duration">5:20</span>
+                        </div>
+                    </div>
 
-  <!-- Modais -->
-  <div id="newsModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <div id="modalNewsContent"></div>
+                    <!-- WhatsApp -->
+                    <div class="sidebar-section whatsapp-channel">
+                        <h3><i class="fab fa-whatsapp"></i> Nosso Canal</h3>
+                        <div class="whatsapp-info">
+                            <div class="whatsapp-icon"><i class="fab fa-whatsapp"></i></div>
+                            <p>Receba as notícias urgentes diretamente no WhatsApp!</p>
+                            <a id="whatsappJoin" href="https://whatsapp.com/channel/0029Vb7IQJFAu3aLGetT6r00" class="whatsapp-join" target="_blank" rel="noopener">
+                                <i class="fab fa-whatsapp"></i> Entrar no Canal
+                            </a>
+                            <div class="whatsapp-stickers">
+                                <span class="sticker">🚀</span>
+                                <span class="sticker">📰</span>
+                                <span class="sticker">⭐</span>
+                                <span class="sticker">🔔</span>
+                                <span class="sticker">🌍</span>
+                            </div>
+                        </div>
+                    </div>
 
-      <div class="comments-section">
-        <h3><i class="far fa-comments"></i> Comentários <span id="commentCount">(0)</span></h3>
-        <div class="comment-form">
-          <textarea id="commentText" placeholder="Deixe seu comentário (não precisa de conta)..." rows="3" maxlength="500"></textarea>
-          <div class="comment-actions">
-            <button id="submitCommentBtn" class="submit-comment"><i class="fas fa-paper-plane"></i> Enviar Comentário</button>
-            <div class="comment-info">
-              <i class="fas fa-info-circle"></i> <span id="charCount">0/500</span> caracteres
+                    <!-- AdSense 2 -->
+                    <div class="sidebar-section adsense-sidebar">
+                        <h3><i class="fas fa-ad"></i> Patrocinado</h3>
+                        <ins class="adsbygoogle"
+                             style="display:block"
+                             data-ad-format="rectangle"
+                             data-ad-client="ca-pub-1816282885500573"
+                             data-ad-slot="5678901234"></ins>
+                    </div>
+
+                    <!-- Mais Lidas -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-chart-line"></i> Mais Lidas Hoje</h3>
+                        <ol class="top-news" id="topNewsList"></ol>
+                    </div>
+                </aside>
             </div>
-          </div>
         </div>
-        <div id="commentsList" class="comments-list"></div>
-      </div>
-    </div>
-  </div>
+    </main>
 
-  <div id="videoModal" class="modal video-modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <div id="videoPlayer"></div>
-    </div>
-  </div>
+    <!-- Modais -->
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modalNewsContent"></div>
 
-  <div id="subscribeModal" class="modal subscribe-modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <div class="subscribe-content">
-        <h2><i class="fas fa-envelope"></i> Newsletter Diária</h2>
-        <p>Receba as principais notícias diretamente no seu e-mail — gratuito.</p>
-
-        <div class="subscribe-form">
-          <h3>Informe seu e-mail</h3>
-          <div class="form-group">
-            <input type="email" id="subscribeEmail" placeholder="seu@email.com">
-            <button id="confirmSubscribeBtn">Confirmar Assinatura</button>
-          </div>
-          <p class="privacy-note">Ao assinar, você concorda com nossa <a href="#">Política de Privacidade</a>.</p>
+            <div class="comments-section">
+                <h3><i class="far fa-comments"></i> Comentários <span id="commentCount">(0)</span></h3>
+                <div class="comment-form">
+                    <textarea id="commentText" placeholder="Deixe seu comentário (não precisa de conta)..." rows="3" maxlength="500"></textarea>
+                    <div class="comment-actions">
+                        <button id="submitCommentBtn" class="submit-comment"><i class="fas fa-paper-plane"></i> Enviar Comentário</button>
+                        <div class="comment-info">
+                            <i class="fas fa-info-circle"></i> <span id="charCount">0/500</span> caracteres
+                        </div>
+                    </div>
+                </div>
+                <div id="commentsList" class="comments-list"></div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3><i class="fas fa-planet-ringed"></i> JupterNews</h3>
-        <p>Levando as notícias mais importantes do planeta diretamente para você. Atualizações 24/7.</p>
-        <div class="whatsapp-footer">
-          <a id="whatsappFooter" href="https://whatsapp.com/channel/0029Vb7IQJFAu3aLGetT6r00" class="whatsapp-link" target="_blank" rel="noopener">
-            <i class="fab fa-whatsapp"></i> Receba no WhatsApp
-          </a>
+    <div id="videoModal" class="modal video-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="videoPlayer"></div>
         </div>
-      </div>
+    </div>
 
-      <div class="footer-section">
-        <h4>Editorias</h4>
-        <ul>
-          <li><a href="#" onclick="filterNews('urgentes')">Urgentes</a></li>
-          <li><a href="#" onclick="filterNews('economia')">Economia</a></li>
-          <li><a href="#" onclick="filterNews('ciencia')">Ciência</a></li>
-          <li><a href="#" onclick="filterNews('esportes')">Esportes</a></li>
-          <li><a href="#" onclick="filterNews('tecnologia')">Tecnologia</a></li>
-          <li><a href="#" onclick="filterNews('saude')">Saúde</a></li>
-          <li><a href="#" onclick="filterNews('cultura')">Cultura</a></li>
-        </ul>
-      </div>
+    <div id="subscribeModal" class="modal subscribe-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="subscribe-content">
+                <h2><i class="fas fa-envelope"></i> Newsletter Diária</h2>
+                <p>Receba as principais notícias diretamente no seu e-mail — gratuito.</p>
 
-      <div class="footer-section">
-        <h4>Recursos</h4>
-        <ul>
-          <li><a href="#" onclick="showAbout()">Sobre a JupterNews</a></li>
-          <li><a href="#" onclick="showContact()">Contato</a></li>
-          <li><a href="#" onclick="showPrivacy()">Privacidade</a></li>
-          <li><a href="#" onclick="showTerms()">Termos de Uso</a></li>
-          <li><a href="#" onclick="showCareers()">Trabalhe Conosco</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h4>Assine nosso Boletim</h4>
-        <div class="newsletter">
-          <input type="email" id="newsletterEmail" placeholder="Seu melhor e-mail">
-          <button type="button" id="footerSubscribeBtn"><i class="fas fa-paper-plane"></i></button>
+                <div class="subscribe-form">
+                    <h3>Informe seu e-mail</h3>
+                    <div class="form-group">
+                        <input type="email" id="subscribeEmail" placeholder="seu@email.com">
+                        <button id="confirmSubscribeBtn">Confirmar Assinatura</button>
+                    </div>
+                    <p class="privacy-note">Ao assinar, você concorda com nossa <a href="#">Política de Privacidade</a>.</p>
+                </div>
+            </div>
         </div>
-        <p>Receba os destaques diários no seu e-mail.</p>
-      </div>
     </div>
 
-    <div class="footer-bottom">
-      <p>&copy; 2023 JupterNews. Todas as notícias são verificadas por nossa equipe editorial.</p>
-      <p class="adsense-code">google.com, pub-1816282885500573, DIRECT, f08c47fec0942fa0</p>
-    </div>
-  </footer>
-  <!-- Adicione esta linha antes de fechar o body -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="app.js"></script>
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-planet-ringed"></i> JupterNews</h3>
+                <p>Levando as notícias mais importantes do planeta diretamente para você. Atualizações 24/7.</p>
+                <div class="whatsapp-footer">
+                    <a id="whatsappFooter" href="https://whatsapp.com/channel/0029Vb7IQJFAu3aLGetT6r00" class="whatsapp-link" target="_blank" rel="noopener">
+                        <i class="fab fa-whatsapp"></i> Receba no WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h4>Editorias</h4>
+                <ul>
+                    <li><a href="#" class="filter-category" data-category="urgentes">Urgentes</a></li>
+                    <li><a href="#" class="filter-category" data-category="economia">Economia</a></li>
+                    <li><a href="#" class="filter-category" data-category="ciencia">Ciência</a></li>
+                    <li><a href="#" class="filter-category" data-category="esportes">Esportes</a></li>
+                    <li><a href="#" class="filter-category" data-category="tecnologia">Tecnologia</a></li>
+                    <li><a href="#" class="filter-category" data-category="saude">Saúde</a></li>
+                    <li><a href="#" class="filter-category" data-category="cultura">Cultura</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Recursos</h4>
+                <ul>
+                    <li><a href="#" id="aboutLink">Sobre a JupterNews</a></li>
+                    <li><a href="#" id="contactLink">Contato</a></li>
+                    <li><a href="#" id="privacyLink">Privacidade</a></li>
+                    <li><a href="#" id="termsLink">Termos de Uso</a></li>
+                    <li><a href="#" id="careersLink">Trabalhe Conosco</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Assine nosso Boletim</h4>
+                <div class="newsletter">
+                    <input type="email" id="newsletterEmail" placeholder="Seu melhor e-mail">
+                    <button type="button" id="footerSubscribeBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <p>Receba os destaques diários no seu e-mail.</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2023 JupterNews. Todas as notícias são verificadas por nossa equipe editorial.</p>
+            <p class="adsense-code">google.com, pub-1816282885500573, DIRECT, f08c47fec0942fa0</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <!-- Supabase com fallback -->
+    <script>
+        // Carregamento seguro do Supabase
+        function loadSupabase() {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@supabase/supabase-js@2';
+            script.onload = () => console.log('Supabase carregado com sucesso');
+            script.onerror = () => console.warn('Supabase não pôde ser carregado. Modo offline ativado.');
+            document.head.appendChild(script);
+        }
+        
+        // Carrega após um pequeno delay para evitar bloqueio
+        setTimeout(loadSupabase, 100);
+    </script>
+    
+    <script src="app.js"></script>
+    
+    <!-- Service Worker apenas em produção -->
+    <script>
+        if ('serviceWorker' in navigator && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registrado:', reg.scope))
+                    .catch(err => console.log('Service Worker não registrado (normal em dev):', err));
+            });
+        }
+    </script>
 </body>
 </html>

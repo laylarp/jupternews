@@ -587,6 +587,11 @@ article:hover .news-image img {
     margin-bottom: 20px;
     cursor: pointer;
     transition: var(--transition);
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+    padding: 0;
 }
 
 .video-item:hover {
@@ -960,6 +965,7 @@ article:hover .news-image img {
 
 .like-btn.liked {
     color: var(--primary-color);
+    font-weight: bold;
 }
 
 .no-comments {
@@ -1494,147 +1500,4 @@ footer {
         border-radius: 50px;
         padding: 12px;
     }
-
-    /* Botão de Sincronização */
-.sync-btn {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
-    color: white;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sync-btn:hover {
-    transform: scale(1.1) rotate(45deg);
-    box-shadow: 0 6px 20px rgba(0, 180, 216, 0.4);
-}
-
-.sync-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.sync-btn i {
-    transition: transform 0.3s ease;
-}
-
-.sync-btn:hover:not(:disabled) i {
-    transform: rotate(180deg);
-}
-
-@media (max-width: 768px) {
-    .sync-btn {
-        bottom: 70px;
-        right: 15px;
-        width: 45px;
-        height: 45px;
-        font-size: 1.1rem;
-    }
-}
-
-/* Estilo para botões de like */
-.like-btn {
-    background: none;
-    border: 1px solid #e0e0e0;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: #666;
-}
-
-.like-btn:hover {
-    background-color: rgba(0, 180, 216, 0.1);
-    border-color: #00b4d8;
-}
-
-.like-btn.liked {
-    background-color: rgba(0, 180, 216, 0.15);
-    border-color: #00b4d8;
-    color: #00b4d8;
-    font-weight: 500;
-}
-
-.like-btn.liked i {
-    color: #00b4d8;
-}
-
-.like-btn i {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.like-btn.liked i {
-    color: #00b4d8;
-}
-
-.comment-actions-comment {
-    margin-top: 8px;
-    display: flex;
-    justify-content: flex-start;
-}
-
-/* Animações para notificações */
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #00b4d8;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    animation: slideIn 0.3s ease-out;
-    transition: all 0.3s;
-}
-
-.notification i {
-    font-size: 1.2rem;
-}
-
-/* Spinner para botões carregando */
-.fa-spinner.fa-spin {
-    animation: fa-spin 2s infinite linear;
-}
-
-@keyframes fa-spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
 }

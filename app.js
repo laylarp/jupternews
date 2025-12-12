@@ -1,14 +1,16 @@
-// Configurações do Supabase - SUBSTITUA COM SEUS DADOS
-const SUPABASE_URL = 'https://mpbuejsxiltcfwfnqpfe.supabase.co'; // Substitua pela sua URL
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wYnVlanN4aWx0Y2Z3Zm5xcGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1MDYwMzcsImV4cCI6MjA4MTA4MjAzN30.N2802Orv1LLDJ5hOpbn_zO8tKfKHsSY_hPBx68BX42c'; // Substitua pela sua chave
+// ==============================================
+// JUPTERNEWS - SISTEMA PRINCIPAL
+// ==============================================
 
-// Configurações locais
+// CONFIGURAÇÕES (SEM SUPABASE PARA EVITAR ERROS)
 const STORAGE_USER_KEY = 'jupterNewsUser';
 const STORAGE_SUBSCRIBERS_KEY = 'jupterNewsSubscribers';
 const STORAGE_VIEWS_KEY = 'jupterNewsViews';
+const STORAGE_COMMENTS_KEY = 'jupterNewsComments';
+const STORAGE_LIKES_KEY = 'jupterNewsLikes';
 const FORM_ENDPOINT = 'https://formspree.io/f/mkgdpbzw';
 
-// Estado da aplicação
+// Estado da aplicação (SIMPLIFICADO - SEM SUPABASE)
 const appState = {
     currentCategory: 'all',
     currentNews: [],
@@ -17,74 +19,41 @@ const appState = {
     userName: localStorage.getItem(STORAGE_USER_KEY) || null,
     subscribers: JSON.parse(localStorage.getItem(STORAGE_SUBSCRIBERS_KEY)) || [],
     newsViews: JSON.parse(localStorage.getItem(STORAGE_VIEWS_KEY)) || {},
-    userId: localStorage.getItem('jupterNewsUserId') || generateUserId(),
-    commentsCache: JSON.parse(localStorage.getItem('jupterNewsCommentsCache')) || {}
+    userComments: JSON.parse(localStorage.getItem(STORAGE_COMMENTS_KEY)) || {},
+    userLikes: JSON.parse(localStorage.getItem(STORAGE_LIKES_KEY)) || []
 };
 
-// Gerar ID único para usuário
-function generateUserId() {
-    const id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('jupterNewsUserId', id);
-    return id;
+// Gerar nome de usuário se não existir
+if (!appState.userName) {
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    appState.userName = `Usuário ${rand}`;
+    localStorage.setItem(STORAGE_USER_KEY, appState.userName);
 }
 
-// Cliente Supabase
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ==============================================
+// INICIALIZAÇÃO
+// ==============================================
 
-// DOM Elements
-let navListEl, loadMoreBtn, newsContainer, featuredContainer;
-let menuToggle, searchInput, searchBtn, subscribeBtn;
-let commentText, submitCommentBtn, confirmSubscribeBtn, footerSubscribeBtn;
-
-// Inicialização
 document.addEventListener('DOMContentLoaded', initApp);
 
 async function initApp() {
-    console.log('JupterNews inicializando com Supabase...');
+    console.log('JupterNews inicializando...');
     
-    // Carregar elementos DOM
-    loadDOMElements();
-    
-    // Configurar usuário
-    setupUser();
-    
-    // Carregar notícias
-    await loadNewsData();
-    
-    // Configurar eventos
-    setupEventListeners();
-    
-    // Carregar conteúdo inicial
-    await renderContent();
-    
-    // Inicializar AdSense
-    initAdSense();
-    
-    console.log('JupterNews pronto! Usuário:', appState.userId);
-}
-
-function loadDOMElements() {
-    navListEl = document.getElementById('navList');
-    loadMoreBtn = document.getElementById('loadMoreBtn');
-    newsContainer = document.getElementById('newsContainer');
-    featuredContainer = document.getElementById('featuredContainer');
-    menuToggle = document.getElementById('menuToggle');
-    searchInput = document.getElementById('searchInput');
-    searchBtn = document.getElementById('searchBtn');
-    subscribeBtn = document.getElementById('subscribeBtn');
-    commentText = document.getElementById('commentText');
-    submitCommentBtn = document.getElementById('submitCommentBtn');
-    confirmSubscribeBtn = document.getElementById('confirmSubscribeBtn');
-    footerSubscribeBtn = document.getElementById('footerSubscribeBtn');
-}
-
-function setupUser() {
-    if (!appState.userName) {
-        const rand = Math.floor(1000 + Math.random() * 9000);
-        appState.userName = `Usuário ${rand}`;
-        localStorage.setItem(STORAGE_USER_KEY, appState.userName);
+    try {
+        await loadNewsData();
+        setupEventListeners();
+        renderContent();
+        initAdSense();
+        console.log('JupterNews pronto!');
+    } catch (error) {
+        console.error('Erro na inicialização:', error);
+        showNotification('Erro ao carregar notícias. Recarregue a página.');
     }
 }
+
+// ==============================================
+// CARREGAMENTO DE DADOS
+// ==============================================
 
 async function loadNewsData() {
     try {
@@ -99,61 +68,153 @@ async function loadNewsData() {
         console.log(`${appState.currentNews.length} notícias carregadas`);
     } catch (error) {
         console.error('Erro ao carregar notícias:', error);
-        appState.currentNews = [];
+        
+        // Dados de fallback em caso de erro
+        appState.currentNews = [
+            {
+                id: 1,
+                title: "SITE EM MANUTENÇÃO - CARREGANDO NOTÍCIAS",
+                excerpt: "Estamos carregando as últimas notícias. Por favor, aguarde.",
+                fullContent: "<p>O JupterNews está carregando as últimas notícias. Por favor, recarregue a página em instantes.</p>",
+                image: "https://images.unsplash.com/photo-1588681664899-f142ff2dc9b1?auto=format&fit=crop&w=1000&q=80",
+                category: "urgentes",
+                categoryName: "INFORMAÇÃO",
+                time: "Agora mesmo",
+                date: new Date().toISOString()
+            }
+        ];
     }
 }
 
+// ==============================================
+// CONFIGURAÇÃO DE EVENTOS
+// ==============================================
+
 function setupEventListeners() {
     // Menu mobile
-    if (menuToggle) {
+    const menuToggle = document.getElementById('menuToggle');
+    const navList = document.getElementById('navList');
+    
+    if (menuToggle && navList) {
         menuToggle.addEventListener('click', () => {
-            navListEl?.classList.toggle('active');
+            navList.classList.toggle('active');
         });
     }
-
-    // Navegação
-    if (navListEl) {
-        navListEl.addEventListener('click', handleNavClick);
+    
+    // Navegação por categoria
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const category = this.getAttribute('data-category');
+            
+            // Ativar link clicado
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filtrar notícias
+            filterByCategory(category);
+            
+            // Fechar menu mobile
+            if (navList) navList.classList.remove('active');
+        });
+    });
+    
+    // Filtro no footer
+    document.querySelectorAll('.filter-category').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const category = this.getAttribute('data-category');
+            filterByCategory(category);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+    
+    // Links do footer
+    document.getElementById('aboutLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('JupterNews é um portal de notícias dedicado a trazer informações atualizadas e confiáveis 24 horas por dia.');
+    });
+    
+    document.getElementById('contactLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Contato: contato@jupternews.com\nTelefone: (11) 99999-9999');
+    });
+    
+    document.getElementById('privacyLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Nossa política de privacidade garante que seus dados estão seguros e são usados apenas para melhorar sua experiência.');
+    });
+    
+    document.getElementById('termsLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Termos de uso: Você concorda em usar este site apenas para fins legais e respeitar os direitos autorais.');
+    });
+    
+    document.getElementById('careersLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Envie seu currículo para: carreiras@jupternews.com');
+    });
+    
+    // Botão de carregar mais
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', loadMoreNews);
     }
-
+    
     // Busca
-    if (searchBtn) searchBtn.addEventListener('click', searchNews);
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchNews);
+    }
+    
     if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') searchNews();
         });
     }
-
-    // Botões
-    if (loadMoreBtn) loadMoreBtn.addEventListener('click', loadMoreNews);
-    if (subscribeBtn) subscribeBtn.addEventListener('click', () => openModal('subscribeModal'));
-    if (submitCommentBtn) submitCommentBtn.addEventListener('click', submitCommentHandler);
-    if (confirmSubscribeBtn) confirmSubscribeBtn.addEventListener('click', subscribeModalHandler);
-    if (footerSubscribeBtn) footerSubscribeBtn.addEventListener('click', footerSubscribeHandler);
-
-    // Contador de caracteres
+    
+    // Botões de vídeo
+    document.querySelectorAll('.video-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const title = this.getAttribute('data-video-title') || this.querySelector('h4')?.textContent || 'Vídeo';
+            playVideo(title);
+        });
+    });
+    
+    // Assinatura
+    const subscribeBtn = document.getElementById('subscribeBtn');
+    const confirmSubscribeBtn = document.getElementById('confirmSubscribeBtn');
+    const footerSubscribeBtn = document.getElementById('footerSubscribeBtn');
+    
+    if (subscribeBtn) {
+        subscribeBtn.addEventListener('click', () => openModal('subscribeModal'));
+    }
+    
+    if (confirmSubscribeBtn) {
+        confirmSubscribeBtn.addEventListener('click', subscribeModalHandler);
+    }
+    
+    if (footerSubscribeBtn) {
+        footerSubscribeBtn.addEventListener('click', footerSubscribeHandler);
+    }
+    
+    // Comentários
+    const commentText = document.getElementById('commentText');
+    const submitCommentBtn = document.getElementById('submitCommentBtn');
+    
     if (commentText) {
         commentText.addEventListener('input', function() {
             const charCount = document.getElementById('charCount');
             if (charCount) charCount.textContent = `${this.value.length}/500`;
         });
     }
-
-    // Fechar modais
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', closeAllModals);
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) {
-            closeAllModals();
-        }
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeAllModals();
-    });
-
+    
+    if (submitCommentBtn) {
+        submitCommentBtn.addEventListener('click', submitCommentHandler);
+    }
+    
     // Curtidas (delegação)
     document.body.addEventListener('click', async (e) => {
         const likeBtn = e.target.closest('.like-btn');
@@ -163,256 +224,35 @@ function setupEventListeners() {
             await toggleLike(newsId, commentId);
         }
     });
-}
-
-function handleNavClick(e) {
-    const link = e.target.closest('.nav-link');
-    if (!link) return;
     
-    e.preventDefault();
-    const category = link.getAttribute('data-category');
+    // Fechar modais
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', closeAllModals);
+    });
     
-    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-    link.classList.add('active');
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            closeAllModals();
+        }
+    });
     
-    filterByCategory(category);
-    navListEl?.classList.remove('active');
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAllModals();
+    });
 }
 
-// Funções do Supabase
-async function fetchComments(newsId) {
-    try {
-        // Verificar cache primeiro (2 minutos)
-        const cacheKey = `comments_${newsId}`;
-        const cached = appState.commentsCache[cacheKey];
-        
-        if (cached && (Date.now() - cached.timestamp < 2 * 60 * 1000)) {
-            return cached.data;
-        }
-        
-        // Buscar do Supabase
-        const { data, error } = await supabaseClient
-            .from('comments')
-            .select('*')
-            .eq('news_id', newsId)
-            .order('created_at', { ascending: false });
-        
-        if (error) {
-            console.error('Erro ao buscar comentários:', error);
-            return [];
-        }
-        
-        if (!data || data.length === 0) {
-            // Atualizar cache vazio
-            appState.commentsCache[cacheKey] = {
-                data: [],
-                timestamp: Date.now()
-            };
-            localStorage.setItem('jupterNewsCommentsCache', JSON.stringify(appState.commentsCache));
-            return [];
-        }
-        
-        // Buscar likes do usuário
-        const commentIds = data.map(c => c.id);
-        const { data: userLikes } = await supabaseClient
-            .from('comment_likes')
-            .select('comment_id')
-            .in('comment_id', commentIds)
-            .eq('user_hash', appState.userId);
-        
-        const likedComments = userLikes?.map(like => like.comment_id) || [];
-        
-        // Formatar dados
-        const formattedComments = data.map(comment => ({
-            id: comment.id,
-            author: comment.author,
-            text: comment.text,
-            date: formatTimeAgo(new Date(comment.created_at)),
-            timestamp: new Date(comment.created_at).getTime(),
-            likes: comment.likes || 0,
-            likedByUser: likedComments.includes(comment.id)
-        }));
-        
-        // Atualizar cache
-        appState.commentsCache[cacheKey] = {
-            data: formattedComments,
-            timestamp: Date.now()
-        };
-        localStorage.setItem('jupterNewsCommentsCache', JSON.stringify(appState.commentsCache));
-        
-        return formattedComments;
-    } catch (error) {
-        console.error('Erro ao buscar comentários:', error);
-        return [];
-    }
-}
+// ==============================================
+// RENDERIZAÇÃO DE CONTEÚDO
+// ==============================================
 
-async function addComment(newsId, text) {
-    try {
-        // Criar ID único baseado em timestamp
-        const commentId = Date.now();
-        
-        const newComment = {
-            id: commentId,
-            news_id: newsId,
-            author: appState.userName,
-            text: text,
-            likes: 0,
-            created_at: new Date().toISOString()
-        };
-        
-        // Inserir no Supabase
-        const { error } = await supabaseClient
-            .from('comments')
-            .insert([newComment]);
-        
-        if (error) {
-            console.error('Erro ao inserir comentário:', error);
-            throw error;
-        }
-        
-        // Limpar cache para esta notícia
-        delete appState.commentsCache[`comments_${newsId}`];
-        localStorage.setItem('jupterNewsCommentsCache', JSON.stringify(appState.commentsCache));
-        
-        return {
-            ...newComment,
-            date: 'Agora mesmo',
-            timestamp: commentId,
-            likedByUser: false
-        };
-    } catch (error) {
-        console.error('Erro ao adicionar comentário:', error);
-        throw error;
-    }
-}
-
-async function toggleLike(newsId, commentId) {
-    try {
-        // Verificar se já curtiu
-        const { data: existingLike } = await supabaseClient
-            .from('comment_likes')
-            .select('id')
-            .eq('comment_id', commentId)
-            .eq('user_hash', appState.userId)
-            .single();
-        
-        let newLikes;
-        
-        if (existingLike) {
-            // Remover like
-            await supabaseClient
-                .from('comment_likes')
-                .delete()
-                .eq('id', existingLike.id);
-            
-            // Buscar likes atuais
-            const { data: comment } = await supabaseClient
-                .from('comments')
-                .select('likes')
-                .eq('id', commentId)
-                .single();
-            
-            newLikes = Math.max((comment?.likes || 0) - 1, 0);
-            
-            // Atualizar contador
-            await supabaseClient
-                .from('comments')
-                .update({ likes: newLikes })
-                .eq('id', commentId);
-            
-            showNotification('Curtida removida');
-        } else {
-            // Adicionar like
-            await supabaseClient
-                .from('comment_likes')
-                .insert([{
-                    comment_id: commentId,
-                    user_hash: appState.userId,
-                    created_at: new Date().toISOString()
-                }]);
-            
-            // Buscar likes atuais
-            const { data: comment } = await supabaseClient
-                .from('comments')
-                .select('likes')
-                .eq('id', commentId)
-                .single();
-            
-            newLikes = (comment?.likes || 0) + 1;
-            
-            // Atualizar contador
-            await supabaseClient
-                .from('comments')
-                .update({ likes: newLikes })
-                .eq('id', commentId);
-            
-            showNotification('Comentário curtido!');
-        }
-        
-        // Atualizar interface IMEDIATAMENTE
-        const likeBtn = document.querySelector(`.like-btn[data-comment-id="${commentId}"]`);
-        if (likeBtn) {
-            const likeCountSpan = likeBtn.querySelector('.like-count');
-            if (likeCountSpan) {
-                likeCountSpan.textContent = newLikes;
-                likeBtn.classList.toggle('liked', !existingLike);
-            }
-        }
-        
-        // Limpar cache para forçar atualização
-        delete appState.commentsCache[`comments_${newsId}`];
-        localStorage.setItem('jupterNewsCommentsCache', JSON.stringify(appState.commentsCache));
-        
-        // Atualizar contadores gerais após 1 segundo
-        setTimeout(async () => {
-            if (appState.currentNewsId === newsId) {
-                await loadComments(newsId);
-            }
-            // Atualizar contadores nas notícias
-            await updateNewsCounters();
-        }, 1000);
-        
-    } catch (error) {
-        console.error('Erro ao alternar like:', error);
-        showNotification('Erro ao processar curtida. Tente novamente.');
-    }
-}
-
-async function updateNewsCounters() {
-    // Atualizar notícias em destaque
-    if (featuredContainer) {
-        await loadFeaturedNews();
-    }
-    
-    // Atualizar notícias na lista
-    if (newsContainer) {
-        const newsCards = newsContainer.querySelectorAll('.news-card');
-        for (const card of newsCards) {
-            const newsId = parseInt(card.getAttribute('data-id'), 10);
-            const comments = await fetchComments(newsId);
-            const commentsCount = comments.length;
-            
-            // Atualizar contador de comentários
-            const commentSpan = card.querySelector('.news-meta span:nth-child(2)');
-            if (commentSpan) {
-                const icon = commentSpan.querySelector('i');
-                commentSpan.innerHTML = '';
-                if (icon) commentSpan.appendChild(icon);
-                commentSpan.appendChild(document.createTextNode(` ${commentsCount}`));
-            }
-        }
-    }
-}
-
-// Renderização
-async function renderContent() {
-    await loadFeaturedNews();
-    await loadInitialNews();
+function renderContent() {
+    loadFeaturedNews();
+    loadInitialNews();
     loadTopNews();
 }
 
-async function loadFeaturedNews() {
+function loadFeaturedNews() {
+    const featuredContainer = document.getElementById('featuredContainer');
     if (!featuredContainer) return;
     
     const featured = getCurrentNews().slice(0, 3);
@@ -423,15 +263,12 @@ async function loadFeaturedNews() {
         return;
     }
     
-    for (const news of featured) {
+    featured.forEach((news, index) => {
         const article = document.createElement('article');
-        const index = featured.indexOf(news);
         article.className = index === 0 ? 'main-featured' : 'secondary-featured';
         article.setAttribute('data-id', news.id);
         
-        // Buscar contagem de comentários
-        const comments = await fetchComments(news.id);
-        const commentsCount = comments.length;
+        const commentsCount = getCommentsCount(news.id);
         const isMain = index === 0;
         
         article.innerHTML = `
@@ -452,10 +289,11 @@ async function loadFeaturedNews() {
         
         article.addEventListener('click', () => openNewsModal(news.id));
         featuredContainer.appendChild(article);
-    }
+    });
 }
 
-async function loadInitialNews() {
+function loadInitialNews() {
+    const newsContainer = document.getElementById('newsContainer');
     if (!newsContainer) return;
     
     newsContainer.innerHTML = '';
@@ -468,21 +306,19 @@ async function loadInitialNews() {
         return;
     }
     
-    for (const news of newsToShow) {
-        const card = await createNewsCard(news);
-        newsContainer.appendChild(card);
-    }
+    newsToShow.forEach(news => {
+        newsContainer.appendChild(createNewsCard(news));
+    });
     
     updateLoadMoreButton();
 }
 
-async function createNewsCard(news) {
+function createNewsCard(news) {
     const card = document.createElement('article');
     card.className = 'news-card';
     card.setAttribute('data-id', news.id);
     
-    const comments = await fetchComments(news.id);
-    const commentsCount = comments.length;
+    const commentsCount = getCommentsCount(news.id);
     const views = appState.newsViews[news.id] || 0;
     
     card.innerHTML = `
@@ -505,7 +341,8 @@ async function createNewsCard(news) {
     return card;
 }
 
-async function loadMoreNews() {
+function loadMoreNews() {
+    const newsContainer = document.getElementById('newsContainer');
     if (!newsContainer) return;
     
     const currentNews = getCurrentNews();
@@ -518,16 +355,18 @@ async function loadMoreNews() {
         return;
     }
     
-    for (const news of moreNews) {
-        const card = await createNewsCard(news);
-        newsContainer.appendChild(card);
-    }
+    moreNews.forEach(news => {
+        newsContainer.appendChild(createNewsCard(news));
+    });
     
     appState.displayedNews = Math.min(end, currentNews.length);
     updateLoadMoreButton();
 }
 
-// Filtragem
+// ==============================================
+// FILTRAGEM E BUSCA
+// ==============================================
+
 function filterByCategory(category) {
     appState.currentCategory = category;
     
@@ -536,8 +375,8 @@ function filterByCategory(category) {
     const newsListTitle = document.getElementById('newsListTitle');
     
     if (category === 'all') {
-        sectionTitle.textContent = 'Destaques do Dia';
-        newsListTitle.textContent = 'Últimas Notícias';
+        if (sectionTitle) sectionTitle.textContent = 'Destaques do Dia';
+        if (newsListTitle) newsListTitle.textContent = 'Últimas Notícias';
     } else {
         const categoryNames = {
             urgentes: 'Urgentes',
@@ -550,8 +389,8 @@ function filterByCategory(category) {
         };
         
         const name = categoryNames[category] || category;
-        sectionTitle.textContent = `Destaques de ${name}`;
-        newsListTitle.textContent = `Notícias de ${name}`;
+        if (sectionTitle) sectionTitle.textContent = `Destaques de ${name}`;
+        if (newsListTitle) newsListTitle.textContent = `Notícias de ${name}`;
     }
     
     // Recarregar conteúdo
@@ -569,7 +408,8 @@ function filterByCategory(category) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-async function loadCategoryFeatured(category) {
+function loadCategoryFeatured(category) {
+    const featuredContainer = document.getElementById('featuredContainer');
     if (!featuredContainer) return;
     
     const items = getCurrentNews().slice(0, 3);
@@ -580,14 +420,12 @@ async function loadCategoryFeatured(category) {
         return;
     }
     
-    for (const news of items) {
+    items.forEach((news, index) => {
         const article = document.createElement('article');
-        const index = items.indexOf(news);
         article.className = index === 0 ? 'main-featured' : 'secondary-featured';
         article.setAttribute('data-id', news.id);
         
-        const comments = await fetchComments(news.id);
-        const commentsCount = comments.length;
+        const commentsCount = getCommentsCount(news.id);
         const isMain = index === 0;
         
         article.innerHTML = `
@@ -607,11 +445,11 @@ async function loadCategoryFeatured(category) {
         
         article.addEventListener('click', () => openNewsModal(news.id));
         featuredContainer.appendChild(article);
-    }
+    });
 }
 
-// Busca
 function searchNews() {
+    const searchInput = document.getElementById('searchInput');
     const term = (searchInput?.value || '').trim().toLowerCase();
     
     if (!term) {
@@ -622,10 +460,14 @@ function searchNews() {
     appState.currentCategory = 'search';
     
     // Atualizar títulos
-    document.getElementById('sectionTitle').textContent = `Resultados para: "${term}"`;
-    document.getElementById('newsListTitle').textContent = 'Notícias Encontradas';
+    const sectionTitle = document.getElementById('sectionTitle');
+    const newsListTitle = document.getElementById('newsListTitle');
+    
+    if (sectionTitle) sectionTitle.textContent = `Resultados para: "${term}"`;
+    if (newsListTitle) newsListTitle.textContent = 'Notícias Encontradas';
     
     // Limpar container
+    const newsContainer = document.getElementById('newsContainer');
     if (!newsContainer) return;
     newsContainer.innerHTML = '';
     
@@ -645,26 +487,29 @@ function searchNews() {
             </div>
         `;
         
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
         if (loadMoreBtn) loadMoreBtn.style.display = 'none';
         return;
     }
     
     // Mostrar resultados
     filtered.forEach(news => {
-        createNewsCard(news).then(card => {
-            newsContainer.appendChild(card);
-        });
+        newsContainer.appendChild(createNewsCard(news));
     });
     
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
     if (loadMoreBtn) loadMoreBtn.style.display = 'none';
     if (searchInput) searchInput.value = '';
     
     // Scroll para resultados
-    document.querySelector('.news-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelector('.news-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     showNotification(`Encontradas ${filtered.length} notícias`);
 }
 
-// Modal de Notícias
+// ==============================================
+// MODAL DE NOTÍCIAS
+// ==============================================
+
 async function openNewsModal(newsId) {
     const news = appState.currentNews.find(n => n.id === newsId);
     
@@ -681,24 +526,25 @@ async function openNewsModal(newsId) {
     
     // Atualizar conteúdo
     const modalContent = document.getElementById('modalNewsContent');
-    const comments = await fetchComments(newsId);
-    const commentsCount = comments.length;
+    const commentsCount = getCommentsCount(newsId);
     
-    modalContent.innerHTML = `
-        <div class="news-full">
-            <h2>${escapeHtml(news.title)}</h2>
-            <div class="news-meta-full">
-                <span><i class="far fa-clock"></i> ${news.time}</span>
-                <span><i class="far fa-comment"></i> <span id="modalCommentCount">${commentsCount}</span> comentários</span>
-                <span><i class="far fa-eye"></i> ${appState.newsViews[newsId] || 0} visualizações</span>
-                <span class="category-label ${news.category}">${news.categoryName}</span>
+    if (modalContent) {
+        modalContent.innerHTML = `
+            <div class="news-full">
+                <h2>${escapeHtml(news.title)}</h2>
+                <div class="news-meta-full">
+                    <span><i class="far fa-clock"></i> ${news.time}</span>
+                    <span><i class="far fa-comment"></i> <span id="modalCommentCount">${commentsCount}</span> comentários</span>
+                    <span><i class="far fa-eye"></i> ${appState.newsViews[newsId] || 0} visualizações</span>
+                    <span class="category-label ${news.category}">${news.categoryName}</span>
+                </div>
+                <div class="news-full-image">
+                    <img src="${news.image}" alt="${escapeHtml(news.title)}">
+                </div>
+                <div class="news-body">${news.fullContent || ''}</div>
             </div>
-            <div class="news-full-image">
-                <img src="${news.image}" alt="${escapeHtml(news.title)}">
-            </div>
-            <div class="news-body">${news.fullContent || ''}</div>
-        </div>
-    `;
+        `;
+    }
     
     // Carregar comentários
     await loadComments(newsId);
@@ -707,12 +553,27 @@ async function openNewsModal(newsId) {
     openModal('newsModal');
 }
 
+// ==============================================
+// SISTEMA DE COMENTÁRIOS (LOCAL)
+// ==============================================
+
+function getCommentsFor(newsId) {
+    return appState.userComments[newsId] ? [...appState.userComments[newsId]] : [];
+}
+
+function getCommentsCount(newsId) {
+    return getCommentsFor(newsId).length;
+}
+
 async function loadComments(newsId) {
     const commentsList = document.getElementById('commentsList');
     const commentCount = document.getElementById('commentCount');
     const modalCommentCount = document.getElementById('modalCommentCount');
     
-    const comments = await fetchComments(newsId);
+    const comments = getCommentsFor(newsId);
+    
+    // Ordenar por data
+    comments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     
     // Atualizar contadores
     if (commentCount) commentCount.textContent = `(${comments.length})`;
@@ -730,7 +591,8 @@ async function loadComments(newsId) {
 }
 
 function renderCommentHtml(newsId, comment) {
-    const likedClass = comment.likedByUser ? 'liked' : '';
+    const isLiked = appState.userLikes.includes(`${newsId}_${comment.id}`);
+    const likedClass = isLiked ? 'liked' : '';
     
     return `
         <div class="comment" data-comment-id="${comment.id}">
@@ -746,6 +608,52 @@ function renderCommentHtml(newsId, comment) {
             </div>
         </div>
     `;
+}
+
+async function toggleLike(newsId, commentId) {
+    const likeKey = `${newsId}_${commentId}`;
+    
+    // Verificar se já curtiu
+    if (appState.userLikes.includes(likeKey)) {
+        // Remover like
+        appState.userLikes = appState.userLikes.filter(key => key !== likeKey);
+        
+        // Decrementar no comentário
+        const comment = appState.userComments[newsId]?.find(c => c.id === commentId);
+        if (comment) {
+            comment.likes = Math.max((comment.likes || 0) - 1, 0);
+        }
+        
+        showNotification('Curtida removida');
+    } else {
+        // Adicionar like
+        appState.userLikes.push(likeKey);
+        
+        // Incrementar no comentário
+        if (!appState.userComments[newsId]) {
+            appState.userComments[newsId] = [];
+        }
+        
+        let comment = appState.userComments[newsId].find(c => c.id === commentId);
+        if (!comment) {
+            // Se não encontrar o comentário, pode ser de outro usuário
+            // Nesse sistema simples, não podemos atualizar likes de outros
+            showNotification('Comentário não encontrado localmente');
+            return;
+        }
+        
+        comment.likes = (comment.likes || 0) + 1;
+        showNotification('Comentário curtido!');
+    }
+    
+    // Salvar no localStorage
+    localStorage.setItem(STORAGE_LIKES_KEY, JSON.stringify(appState.userLikes));
+    localStorage.setItem(STORAGE_COMMENTS_KEY, JSON.stringify(appState.userComments));
+    
+    // Recarregar comentários se o modal estiver aberto
+    if (appState.currentNewsId === newsId) {
+        await loadComments(newsId);
+    }
 }
 
 async function submitCommentHandler() {
@@ -771,38 +679,41 @@ async function submitCommentHandler() {
         return;
     }
     
-    // Desabilitar botão enquanto envia
-    submitCommentBtn.disabled = true;
-    submitCommentBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    // Criar comentário
+    if (!appState.userComments[newsId]) appState.userComments[newsId] = [];
     
-    try {
-        // Adicionar comentário no Supabase
-        await addComment(newsId, text);
-        
-        // Limpar textarea
-        textarea.value = '';
-        document.getElementById('charCount').textContent = '0/500';
-        
-        // Recarregar comentários
-        await loadComments(newsId);
-        
-        // Atualizar outras partes
-        await loadFeaturedNews();
-        await loadInitialNews();
-        loadTopNews();
-        
-        showNotification('Comentário enviado com sucesso!');
-    } catch (error) {
-        showNotification('Erro ao enviar comentário. Tente novamente.');
-        console.error('Erro:', error);
-    } finally {
-        // Re-habilitar botão
-        submitCommentBtn.disabled = false;
-        submitCommentBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Comentário';
-    }
+    const newComment = {
+        id: Date.now(),
+        author: appState.userName,
+        text: text,
+        date: 'Agora mesmo',
+        timestamp: Date.now(),
+        likes: 0
+    };
+    
+    appState.userComments[newsId].push(newComment);
+    localStorage.setItem(STORAGE_COMMENTS_KEY, JSON.stringify(appState.userComments));
+    
+    // Limpar textarea
+    textarea.value = '';
+    const charCount = document.getElementById('charCount');
+    if (charCount) charCount.textContent = '0/500';
+    
+    // Recarregar comentários
+    await loadComments(newsId);
+    
+    // Atualizar outras partes
+    loadFeaturedNews();
+    loadInitialNews();
+    loadTopNews();
+    
+    showNotification('Comentário enviado com sucesso!');
 }
 
-// Newsletter
+// ==============================================
+// NEWSLETTER
+// ==============================================
+
 async function subscribeToEndpoint(email) {
     const payload = {
         email: email,
@@ -843,6 +754,7 @@ async function subscribeModalHandler() {
     }
     
     // Desabilitar botão enquanto envia
+    const confirmSubscribeBtn = document.getElementById('confirmSubscribeBtn');
     if (confirmSubscribeBtn) {
         confirmSubscribeBtn.disabled = true;
         confirmSubscribeBtn.textContent = 'Enviando...';
@@ -882,6 +794,7 @@ async function footerSubscribeHandler() {
     }
     
     // Feedback visual
+    const footerSubscribeBtn = document.getElementById('footerSubscribeBtn');
     if (footerSubscribeBtn) {
         footerSubscribeBtn.disabled = true;
         const originalHTML = footerSubscribeBtn.innerHTML;
@@ -904,7 +817,10 @@ async function footerSubscribeHandler() {
     if (emailInput) emailInput.value = '';
 }
 
-// Notícias Mais Lidas
+// ==============================================
+// NOTÍCIAS MAIS LIDAS
+// ==============================================
+
 function loadTopNews() {
     const topList = document.getElementById('topNewsList');
     if (!topList) return;
@@ -933,7 +849,10 @@ function loadTopNews() {
     });
 }
 
-// Funções Auxiliares
+// ==============================================
+// FUNÇÕES AUXILIARES
+// ==============================================
+
 function getCurrentNews() {
     if (appState.currentCategory === 'all' || appState.currentCategory === 'search') {
         return appState.currentNews;
@@ -1022,61 +941,17 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function formatTimeAgo(date) {
-    const now = new Date();
-    const diffMs = now - date;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-    
-    if (diffSec < 60) return 'Agora mesmo';
-    if (diffMin < 60) return `Há ${diffMin} minuto${diffMin > 1 ? 's' : ''}`;
-    if (diffHour < 24) return `Há ${diffHour} hora${diffHour > 1 ? 's' : ''}`;
-    if (diffDay < 7) return `Há ${diffDay} dia${diffDay > 1 ? 's' : ''}`;
-    
-    return date.toLocaleDateString('pt-BR');
-}
-
 function initAdSense() {
     if (window.adsbygoogle) {
         (adsbygoogle = window.adsbygoogle || []).push({});
     }
 }
 
-// Funções Globais
-window.filterNews = function(category) {
-    const link = document.querySelector(`.nav-link[data-category="${category}"]`);
-    if (link) {
-        link.click();
-    } else {
-        filterByCategory(category);
-    }
-};
-
-window.showAbout = function() {
-    alert('JupterNews é um portal de notícias dedicado a trazer informações atualizadas e confiáveis 24 horas por dia.');
-};
-
-window.showContact = function() {
-    alert('Contato: contato@jupternews.com\nTelefone: (11) 99999-9999');
-};
-
-window.showPrivacy = function() {
-    alert('Nossa política de privacidade garante que seus dados estão seguros e são usados apenas para melhorar sua experiência.');
-};
-
-window.showTerms = function() {
-    alert('Termos de uso: Você concorda em usar este site apenas para fins legais e respeitar os direitos autorais.');
-};
-
-window.showCareers = function() {
-    alert('Envie seu currículo para: carreiras@jupternews.com');
-};
-
-window.playVideo = function(title) {
+function playVideo(title) {
     const modal = document.getElementById('videoModal');
     const player = document.getElementById('videoPlayer');
+    
+    if (!modal || !player) return;
     
     player.innerHTML = `
         <div class="video-placeholder">
@@ -1087,5 +962,17 @@ window.playVideo = function(title) {
         </div>
     `;
     
-    openModal('videoModal');
-};
+    modal.style.display = 'block';
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+}
+
+// ==============================================
+// INICIALIZAR AD SENSE
+// ==============================================
+
+if (window.adsbygoogle) {
+    window.addEventListener('load', () => {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    });
+}

@@ -77,6 +77,32 @@
       "views": 0,
       "comments": 0,
       "date": "2023-12-15T03:00:00Z"
+    },
+    {
+      "id": 4,
+      "title": "DESEMPREGO CAI PARA 8,3% - MENOR TAXA DESDE 2015",
+      "excerpt": "Pesquisa do IBGE mostra criação de 1,2 milhão de vagas formais no trimestre.",
+      "fullContent": "<p>A taxa de desemprego no Brasil caiu para 8,3% no trimestre encerrado em outubro, segundo dados do IBGE divulgados hoje. Esta é a menor taxa desde 2015, representando uma queda de 1,5 ponto percentual em relação ao trimestre anterior.</p><p>O número de pessoas empregadas no país chegou a 100,2 milhões, com criação de 1,2 milhão de postos de trabalho formais. Os setores que mais contrataram foram serviços, comércio e construção civil.</p>",
+      "image": "https://images.unsplash.com/photo-1586769852044-692eb51d3d6e?auto=format&fit=crop&w=1000&q=80",
+      "category": "economia",
+      "categoryName": "Economia",
+      "time": "1 dia atrás",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-14T10:00:00Z"
+    },
+    {
+      "id": 5,
+      "title": "NASA CONFIRMA PRESENÇA DE ÁGUA EM EUROPA, LUA DE JÚPITER",
+      "excerpt": "Missão Europa Clipper detecta plumas de água saindo da superfície gelada.",
+      "fullContent": "<p>A NASA anunciou hoje a confirmação definitiva da presença de água em Europa, uma das luas de Júpiter. A sonda Europa Clipper detectou plumas de vapor d'água saindo de fissuras na superfície gelada do satélite.</p><p>Os cientistas estimam que Europa possui um oceano subterrâneo com mais água do que todos os oceanos da Terra combinados. A descoberta aumenta as chances de encontrar vida extraterrestre no sistema solar.</p>",
+      "image": "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?auto=format&fit=crop&w=1000&q=80",
+      "category": "ciencia",
+      "categoryName": "Ciência",
+      "time": "2 horas atrás",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-15T08:00:00Z"
     }
   ]
 }
