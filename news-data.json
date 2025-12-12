@@ -1,0 +1,82 @@
+{
+  "news": [
+    {
+      "id": 11,
+      "title": "NOVO TRATAMENTO PARA CÂNCER MOSTRA 95% DE EFICÁCIA",
+      "excerpt": "Pesquisa brasileira desenvolve terapia que elimina células cancerígenas sem danificar células saudáveis.",
+      "fullContent": "<p>Uma equipe de pesquisadores brasileiros anunciou um tratamento revolucionário contra o câncer que mostrou 95% de eficácia em testes clínicos iniciais. A terapia utiliza uma combinação de imunoterapia e nanotecnologia para atacar especificamente as células cancerígenas.</p><p>Os testes foram realizados em pacientes com diferentes tipos de câncer, incluindo mama, pulmão e próstata, com resultados promissores. O tratamento deve estar disponível no SUS em até dois anos.</p>",
+      "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1000&q=80",
+      "category": "saude",
+      "categoryName": "Saúde",
+      "time": "Agora mesmo",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-15T10:00:00Z"
+    },
+    {
+      "id": 10,
+      "title": "INTELIGÊNCIA ARTIFICIAL DA OPENAI SUPERA HUMANOS EM TESTES DE RACIOCÍNIO",
+      "excerpt": "Nova versão do GPT-5 atinge 98% em testes padrão de QI, superando a média humana.",
+      "fullContent": "<p>A OpenAI anunciou hoje que sua mais recente IA, o GPT-5, superou os seres humanos em uma série de testes padronizados de QI e raciocínio lógico. O sistema alcançou 98% de acerto em questões que exigem raciocínio abstrato e solução de problemas complexos.</p><p>Especialistas afirmam que esta é uma marca histórica no desenvolvimento da inteligência artificial. A tecnologia já está sendo testada em aplicações médicas e científicas.</p>",
+      "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1000&q=80",
+      "category": "tecnologia",
+      "categoryName": "Tecnologia",
+      "time": "15 minutos atrás",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-15T09:45:00Z"
+    },
+    {
+      "id": 9,
+      "title": "DÓLAR CAI PARA R$ 4,75 - MENOR VALOR EM 10 MESES",
+      "excerpt": "Moeda americana recua após anúncio do Fed sobre redução gradual dos juros.",
+      "fullContent": "<p>O dólar comercial fechou esta sexta-feira cotado a R$ 4,75, a menor taxa em dez meses. A queda de 2,5% ocorreu após o Federal Reserve (Fed) sinalizar uma redução gradual nas taxas de juros dos EUA.</p><p>Analistas acreditam que a moeda pode fechar o ano abaixo de R$ 4,80, o que beneficiaria o controle da inflação no Brasil.</p>",
+      "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000&q=80",
+      "category": "economia",
+      "categoryName": "Economia",
+      "time": "1 hora atrás",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-15T09:00:00Z"
+    },
+    {
+      "id": 1,
+      "title": "TERREMOTO DE 7.2 ATINGE COSTA DO CHILE - ALERTA DE TSUNAMI EMITIDO",
+      "excerpt": "Tremor de magnitude 7.2 foi registrado no norte do Chile. Autoridades emitem alerta de tsunami.",
+      "fullContent": "<p>Um forte terremoto de magnitude 7.2 atingiu a região norte do Chile, causando pânico entre a população local. O Centro Sismológico Nacional do Chile registrou o epicentro a 89 km a oeste de Iquique, a uma profundidade de 35 km.</p><p>O Serviço Hidrográfico e Oceanográfico da Armada do Chile (SHOA) emitiu alerta de tsunami para a costa norte do país. Moradores das áreas costeiras estão sendo evacuados para zonas mais altas.</p>",
+      "image": "https://images.unsplash.com/photo-1506252374453-ef5237294c74?auto=format&fit=crop&w=1000&q=80",
+      "category": "urgentes",
+      "categoryName": "URGENTE",
+      "time": "3 horas atrás",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-15T07:30:00Z"
+    },
+    {
+      "id": 2,
+      "title": "SUSPEITA DE VARÍOLA DOS MACACOS EM SÃO PAULO - MINISTÉRIO DA SAÚDE INVESTIGA",
+      "excerpt": "Paciente com sintomas compatíveis com monkeypox está isolado no Hospital das Clínicas.",
+      "fullContent": "<p>O Ministério da Saúde confirmou que está investigando um caso suspeito de varíola dos macacos (monkeypox) em São Paulo. O paciente, um homem de 32 anos, apresenta sintomas compatíveis com a doença e está em isolamento no Hospital das Clínicas.</p><p>Equipes de vigilância epidemiológica estão rastreando possíveis contatos do paciente. Este seria o primeiro caso registrado no Brasil este ano.</p>",
+      "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1000&q=80",
+      "category": "urgentes",
+      "categoryName": "URGENTE",
+      "time": "5 horas atrás",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-15T06:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "APAGÃO AFETA 5 ESTADOS DO NORDESTE - ENERGIA AINDA NÃO FOI TOTALMENTE RESTABELECIDA",
+      "excerpt": "Falta de energia atinge milhões de consumidores. Equipes trabalham para restaurar o fornecimento.",
+      "fullContent": "<p>Um apagão de grandes proporções atingiu cinco estados do Nordeste brasileiro na madrugada desta sexta-feira. Cidades na Bahia, Pernambuco, Ceará, Rio Grande do Norte e Paraíba ficaram sem energia por mais de 3 horas.</p><p>Segundo a Companhia Hidro Elétrica do São Francisco (Chesf), o problema ocorreu em uma subestação em Paulo Afonso (BA). Equipes técnicas trabalham para normalizar totalmente o fornecimento até o final do dia.</p>",
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1000&q=80",
+      "category": "urgentes",
+      "categoryName": "URGENTE",
+      "time": "8 horas atrás",
+      "views": 0,
+      "comments": 0,
+      "date": "2023-12-15T03:00:00Z"
+    }
+  ]
+}
