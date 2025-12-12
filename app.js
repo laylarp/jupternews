@@ -55,7 +55,7 @@ async function initApp() {
     setupEventListeners();
     
     // Carregar conteúdo inicial
-    renderContent();
+    await renderContent();
     
     // Inicializar AdSense
     initAdSense();
@@ -318,29 +318,13 @@ async function toggleLike(newsId, commentId) {
     }
 }
 
-// Função auxiliar para criar a stored procedure no Supabase
-// Execute este SQL no Supabase SQL Editor:
-/*
-CREATE OR REPLACE FUNCTION increment_like(comment_id BIGINT)
-RETURNS void AS $$
-BEGIN
-  UPDATE comments 
-  SET likes = COALESCE(likes, 0) + 1 
-  WHERE id = comment_id;
-END;
-$$ LANGUAGE plpgsql;
+// Renderização
+async function renderContent() {
+    await loadFeaturedNews();
+    await loadInitialNews();
+    loadTopNews();
+}
 
-CREATE OR REPLACE FUNCTION decrement_like(comment_id BIGINT)
-RETURNS void AS $$
-BEGIN
-  UPDATE comments 
-  SET likes = GREATEST(COALESCE(likes, 0) - 1, 0)
-  WHERE id = comment_id;
-END;
-$$ LANGUAGE plpgsql;
-*/
-
-// Funções de renderização
 async function loadFeaturedNews() {
     if (!featuredContainer) return;
     
@@ -434,6 +418,166 @@ async function createNewsCard(news) {
     return card;
 }
 
+async function loadMoreNews() {
+    if (!newsContainer) return;
+    
+    const currentNews = getCurrentNews();
+    const start = appState.displayedNews;
+    const end = start + 3;
+    const moreNews = currentNews.slice(start, end);
+    
+    if (moreNews.length === 0) {
+        showNotification('Todas as notícias foram carregadas!');
+        return;
+    }
+    
+    for (const news of moreNews) {
+        const card = await createNewsCard(news);
+        newsContainer.appendChild(card);
+    }
+    
+    appState.displayedNews = Math.min(end, currentNews.length);
+    updateLoadMoreButton();
+}
+
+// Filtragem
+function filterByCategory(category) {
+    appState.currentCategory = category;
+    
+    // Atualizar títulos
+    const sectionTitle = document.getElementById('sectionTitle');
+    const newsListTitle = document.getElementById('newsListTitle');
+    
+    if (category === 'all') {
+        sectionTitle.textContent = 'Destaques do Dia';
+        newsListTitle.textContent = 'Últimas Notícias';
+    } else {
+        const categoryNames = {
+            urgentes: 'Urgentes',
+            economia: 'Economia',
+            ciencia: 'Ciência',
+            esportes: 'Esportes',
+            cultura: 'Cultura',
+            tecnologia: 'Tecnologia',
+            saude: 'Saúde'
+        };
+        
+        const name = categoryNames[category] || category;
+        sectionTitle.textContent = `Destaques de ${name}`;
+        newsListTitle.textContent = `Notícias de ${name}`;
+    }
+    
+    // Recarregar conteúdo
+    loadInitialNews();
+    
+    if (category === 'all') {
+        loadFeaturedNews();
+    } else {
+        loadCategoryFeatured(category);
+    }
+    
+    loadTopNews();
+    
+    // Scroll para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function loadCategoryFeatured(category) {
+    if (!featuredContainer) return;
+    
+    const items = getCurrentNews().slice(0, 3);
+    featuredContainer.innerHTML = '';
+    
+    if (items.length === 0) {
+        featuredContainer.innerHTML = '<p class="no-news">Nenhuma notícia nesta categoria</p>';
+        return;
+    }
+    
+    for (const news of items) {
+        const article = document.createElement('article');
+        const index = items.indexOf(news);
+        article.className = index === 0 ? 'main-featured' : 'secondary-featured';
+        article.setAttribute('data-id', news.id);
+        
+        const comments = await fetchComments(news.id);
+        const commentsCount = comments.length;
+        const isMain = index === 0;
+        
+        article.innerHTML = `
+            <div class="news-image">
+                <img src="${news.image}" alt="${escapeHtml(news.title)}" loading="lazy">
+                <span class="category-label ${news.category}">${news.categoryName}</span>
+            </div>
+            <div class="news-content">
+                <h3 class="news-title">${escapeHtml(news.title)}</h3>
+                ${isMain ? `<p class="news-excerpt">${escapeHtml(news.excerpt)}</p>` : ''}
+                <div class="news-meta">
+                    <span><i class="far fa-clock"></i> ${news.time}</span>
+                    <span><i class="far fa-comment"></i> ${commentsCount} comentários</span>
+                </div>
+            </div>
+        `;
+        
+        article.addEventListener('click', () => openNewsModal(news.id));
+        featuredContainer.appendChild(article);
+    }
+}
+
+// Busca
+function searchNews() {
+    const term = (searchInput?.value || '').trim().toLowerCase();
+    
+    if (!term) {
+        showNotification('Digite um termo para buscar');
+        return;
+    }
+    
+    appState.currentCategory = 'search';
+    
+    // Atualizar títulos
+    document.getElementById('sectionTitle').textContent = `Resultados para: "${term}"`;
+    document.getElementById('newsListTitle').textContent = 'Notícias Encontradas';
+    
+    // Limpar container
+    if (!newsContainer) return;
+    newsContainer.innerHTML = '';
+    
+    // Filtrar notícias
+    const filtered = appState.currentNews.filter(n => 
+        (n.title || '').toLowerCase().includes(term) ||
+        (n.excerpt || '').toLowerCase().includes(term) ||
+        (n.fullContent || '').toLowerCase().includes(term)
+    );
+    
+    if (filtered.length === 0) {
+        newsContainer.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>Nenhuma notícia encontrada</h3>
+                <p>Tente outros termos de busca</p>
+            </div>
+        `;
+        
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        return;
+    }
+    
+    // Mostrar resultados
+    filtered.forEach(news => {
+        createNewsCard(news).then(card => {
+            newsContainer.appendChild(card);
+        });
+    });
+    
+    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+    if (searchInput) searchInput.value = '';
+    
+    // Scroll para resultados
+    document.querySelector('.news-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showNotification(`Encontradas ${filtered.length} notícias`);
+}
+
+// Modal de Notícias
 async function openNewsModal(newsId) {
     const news = appState.currentNews.find(n => n.id === newsId);
     
@@ -571,7 +715,226 @@ async function submitCommentHandler() {
     }
 }
 
-// Funções auxiliares
+// Newsletter
+async function subscribeToEndpoint(email) {
+    const payload = {
+        email: email,
+        timestamp: new Date().toISOString(),
+        source: window.location.href,
+        message: `Novo assinante JupterNews: ${email}`
+    };
+    
+    try {
+        const response = await fetch(FORM_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        return { ok: response.ok };
+    } catch (error) {
+        return { ok: false, error: error.message };
+    }
+}
+
+async function subscribeModalHandler() {
+    const emailInput = document.getElementById('subscribeEmail');
+    const email = (emailInput?.value || '').trim();
+    
+    if (!validateEmail(email)) {
+        showNotification('Por favor, insira um e-mail válido');
+        return;
+    }
+    
+    // Salvar localmente
+    if (!appState.subscribers.includes(email)) {
+        appState.subscribers.push(email);
+        localStorage.setItem(STORAGE_SUBSCRIBERS_KEY, JSON.stringify(appState.subscribers));
+    }
+    
+    // Desabilitar botão enquanto envia
+    if (confirmSubscribeBtn) {
+        confirmSubscribeBtn.disabled = true;
+        confirmSubscribeBtn.textContent = 'Enviando...';
+    }
+    
+    // Enviar para Formspree
+    const result = await subscribeToEndpoint(email);
+    
+    // Re-habilitar botão
+    if (confirmSubscribeBtn) {
+        confirmSubscribeBtn.disabled = false;
+        confirmSubscribeBtn.textContent = 'Confirmar Assinatura';
+    }
+    
+    if (result.ok) {
+        showNotification('Assinatura confirmada! Você receberá nossas notícias em breve.');
+        closeModal('subscribeModal');
+    } else {
+        showNotification('Assinatura salva localmente. Houve um problema ao enviar.');
+    }
+    
+    if (emailInput) emailInput.value = '';
+}
+
+async function footerSubscribeHandler() {
+    const emailInput = document.getElementById('newsletterEmail');
+    const email = (emailInput?.value || '').trim();
+    
+    if (!validateEmail(email)) {
+        showNotification('Por favor, insira um e-mail válido');
+        return;
+    }
+    
+    if (!appState.subscribers.includes(email)) {
+        appState.subscribers.push(email);
+        localStorage.setItem(STORAGE_SUBSCRIBERS_KEY, JSON.stringify(appState.subscribers));
+    }
+    
+    // Feedback visual
+    if (footerSubscribeBtn) {
+        footerSubscribeBtn.disabled = true;
+        const originalHTML = footerSubscribeBtn.innerHTML;
+        footerSubscribeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        // Enviar
+        const result = await subscribeToEndpoint(email);
+        
+        // Restaurar botão
+        footerSubscribeBtn.disabled = false;
+        footerSubscribeBtn.innerHTML = originalHTML;
+        
+        if (result.ok) {
+            showNotification('Assinatura confirmada! Obrigado por se inscrever.');
+        } else {
+            showNotification('Assinatura salva localmente. Houve um problema ao enviar.');
+        }
+    }
+    
+    if (emailInput) emailInput.value = '';
+}
+
+// Notícias Mais Lidas
+function loadTopNews() {
+    const topList = document.getElementById('topNewsList');
+    if (!topList) return;
+    
+    const topNews = [...appState.currentNews]
+        .sort((a, b) => {
+            const viewsA = appState.newsViews[a.id] || 0;
+            const viewsB = appState.newsViews[b.id] || 0;
+            return viewsB - viewsA;
+        })
+        .slice(0, 5);
+    
+    topList.innerHTML = '';
+    
+    if (topNews.length === 0) {
+        topList.innerHTML = '<li>Nenhuma notícia com visualizações</li>';
+        return;
+    }
+    
+    topNews.forEach(news => {
+        const li = document.createElement('li');
+        li.textContent = news.title.length > 60 ? news.title.substring(0, 60) + '...' : news.title;
+        li.title = news.title;
+        li.addEventListener('click', () => openNewsModal(news.id));
+        topList.appendChild(li);
+    });
+}
+
+// Funções Auxiliares
+function getCurrentNews() {
+    if (appState.currentCategory === 'all' || appState.currentCategory === 'search') {
+        return appState.currentNews;
+    }
+    return appState.currentNews.filter(n => n.category === appState.currentCategory);
+}
+
+function updateLoadMoreButton() {
+    const currentNews = getCurrentNews();
+    const hasMore = appState.displayedNews < currentNews.length;
+    const btn = document.getElementById('loadMoreBtn');
+    
+    if (!btn) return;
+    
+    btn.style.display = hasMore ? 'block' : 'none';
+    btn.disabled = !hasMore;
+    btn.innerHTML = hasMore
+        ? '<i class="fas fa-plus"></i> Carregar Mais Notícias'
+        : '<i class="fas fa-check"></i> Todas as notícias carregadas';
+}
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+    }
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+    });
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+}
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function showNotification(message) {
+    // Remover notificações anteriores
+    const existing = document.querySelectorAll('.notification');
+    existing.forEach(n => n.remove());
+    
+    // Criar nova notificação
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span>${escapeHtml(message)}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animar entrada
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(-6px)';
+    }, 10);
+    
+    // Auto-remover
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(0)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function formatTimeAgo(date) {
     const now = new Date();
     const diffMs = now - date;
@@ -588,9 +951,54 @@ function formatTimeAgo(date) {
     return date.toLocaleDateString('pt-BR');
 }
 
-// Mantenha as outras funções do arquivo original (filterByCategory, searchNews, etc.)
-// Elas não precisam ser modificadas, apenas certifique-se de incluir todas
+function initAdSense() {
+    if (window.adsbygoogle) {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    }
+}
 
-// Inclua a biblioteca do Supabase no seu HTML
-// Adicione esta linha antes do </body> no index.html:
-// <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+// Funções Globais
+window.filterNews = function(category) {
+    const link = document.querySelector(`.nav-link[data-category="${category}"]`);
+    if (link) {
+        link.click();
+    } else {
+        filterByCategory(category);
+    }
+};
+
+window.showAbout = function() {
+    alert('JupterNews é um portal de notícias dedicado a trazer informações atualizadas e confiáveis 24 horas por dia.');
+};
+
+window.showContact = function() {
+    alert('Contato: contato@jupternews.com\nTelefone: (11) 99999-9999');
+};
+
+window.showPrivacy = function() {
+    alert('Nossa política de privacidade garante que seus dados estão seguros e são usados apenas para melhorar sua experiência.');
+};
+
+window.showTerms = function() {
+    alert('Termos de uso: Você concorda em usar este site apenas para fins legais e respeitar os direitos autorais.');
+};
+
+window.showCareers = function() {
+    alert('Envie seu currículo para: carreiras@jupternews.com');
+};
+
+window.playVideo = function(title) {
+    const modal = document.getElementById('videoModal');
+    const player = document.getElementById('videoPlayer');
+    
+    player.innerHTML = `
+        <div class="video-placeholder">
+            <i class="fas fa-play-circle"></i>
+            <h3>${escapeHtml(title)}</h3>
+            <p>Esta é uma demonstração do player de vídeo.</p>
+            <p>Em um ambiente real, aqui estaria o vídeo embedado do YouTube ou Vimeo.</p>
+        </div>
+    `;
+    
+    openModal('videoModal');
+};
